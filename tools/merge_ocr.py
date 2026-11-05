@@ -181,6 +181,23 @@ def ocr_slip(u, o):
     return '開' in o and '0' in u  # 「00」を「開」と読む
 
 
+def kaidai(r, ocrs):
+    """改題の問（元にしたサイトが今の法律に合わせて書き換えた問）は本人の文を捨て、OCR 2回が同じならその文にする。
+    目で PDF と見較べるまで未確認（tools/mokushi_ok.tsv に載せたら apply_hand.py が確認済みにする）。"""
+    if not ocrs[0] or ocrs[0] != ocrs[1]:
+        return
+    o = re.sub(r'(?<![A-Za-z])([a-ln-z])(?![A-Za-z])', lambda m: m.group(1).upper(), ocrs[0])  # 「買主c」
+    parts = re.split(r'(?<=。)([1-4])(?=\D)', o)
+    keys = parts[1::2]
+    if keys != ['1', '2', '3', '4']:
+        return
+    r['stem'], r['extra'], r['items'] = parts[0], [], []
+    r['choices'] = [[k, t] for k, t in zip(keys, parts[2::2])]
+    r['needs'] = [n for n in r['needs'] if not n.startswith('改題')]
+    r['kaidai_ocr'] = True
+    r['verified'] = False
+
+
 def apply(user, s, e, edits):
     """user[s:e] に edits を当てた字。"""
     out, i = [], s
@@ -334,6 +351,8 @@ def main():
         r['yomezu'] = [g for g in gaps.get((r['y'], r['q']), []) if not ocr_slip(g, '')]  # 行の尻の「い。」などは除く
         r['verified'] = r.get('ocr_cover', 0) >= 0.85 and not r['yomezu'] and not any(
             a[0] == r['y'] and str(a[1]) == str(r['q']) for a in ask)
+        if any(n.startswith('改題') for n in r['needs']):
+            kaidai(r, [OCRQ.get((d, r['y']), {}).get(r['q'], [''])[0] for d in (b1, b2)])
         keymap[(r['y'], r['q'])] = r
     with open(out, 'w', encoding='utf-8') as f:
         for r in rows:

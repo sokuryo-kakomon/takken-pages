@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>宅建 直す表</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1d1d1f; --sub:#6b6b70; --line:#e2e0da; --mark:#ffe08a; --ok:#1f7a4d; --accent:#2b5bd7; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.7 "Yu Gothic UI","Hiragino Sans",sans-serif; }
+  header { position:sticky; top:0; z-index:2; background:var(--card); border-bottom:1px solid var(--line);
+           padding:10px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:16px; margin:0 8px 0 0; }
+  #prog { font-weight:600; }
+  #bar { flex:1; min-width:120px; height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
+  #bar i { display:block; height:100%; background:var(--ok); width:0; }
+  button, select { font:inherit; padding:4px 12px; border:1px solid var(--line); border-radius:6px; background:var(--card); cursor:pointer; }
+  button.main { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .help { max-width:1400px; margin:12px auto 0; padding:0 16px; color:var(--sub); font-size:13px; }
+  main { max-width:1400px; margin:0 auto; padding:12px 16px 80px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; margin:14px 0; padding:14px 16px; }
+  .card.done { border-color:var(--ok); }
+  .card h2 { font-size:16px; margin:0 0 4px; display:flex; gap:10px; align-items:center; }
+  .card h2 .st { font-size:12px; font-weight:400; color:var(--sub); }
+  .card.done h2 .st { color:var(--ok); }
+  .why { margin:0 0 10px; padding-left:18px; color:var(--sub); font-size:13px; }
+  .cols { display:grid; grid-template-columns: 1.3fr 1fr; gap:14px; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .pdf { border:1px solid var(--line); border-radius:6px; overflow:auto; max-height:720px; background:#fff; }
+  .pdf img { display:block; width:100%; height:auto; }
+  textarea { width:100%; min-height:420px; font:15px/1.7 "Yu Gothic UI",sans-serif; padding:8px; border:1px solid var(--line); border-radius:6px; }
+  label.chk { display:flex; gap:8px; align-items:center; margin-top:6px; font-weight:600; }
+  details { margin-top:10px; }
+  summary { cursor:pointer; color:var(--accent); }
+  .cmp { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:8px; font-size:13px; }
+  @media (max-width: 900px) { .cmp { grid-template-columns: 1fr; } }
+  .cmp div { border:1px solid var(--line); border-radius:6px; padding:8px; }
+  .cmp b { display:block; color:var(--sub); font-weight:600; margin-bottom:4px; }
+  mark { background:var(--mark); }
+</style>
+</head>
+<body>
+<header>
+  <h1>宅建 直す表</h1>
+  <span id="prog"></span><div id="bar"><i></i></div>
+  <select id="filter"><option value="todo">まだの問</option><option value="all">全部</option><option value="done">直した問</option></select>
+  <button class="main" id="export">書き出す（tegaki_naoshi.json）</button>
+</header>
+<p class="help">左の PDF の画像を正として、右の欄の文を1字ずつ直してください。<mark>色の字</mark>は OCR の読み（2回）のどちらとも合わなかった所で、原文に無い書き足しや打ち間違いのことが多い所です。直し終えたら「PDF と見較べた」に印を付けます。途中の文はこのブラウザに残ります。区切りのよい所で「書き出す」を押すと tegaki_naoshi.json が保存されるので、そのファイルを Claude に渡してください。</p>
+<main id="list"></main>
+<script>
+const CARDS = /*DATA*/[];
+const KEY = 'takken-naoshi-v1';
+let st = {};
+try { st = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { st = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+// 元の文が変わった問の途中の文は捨てる
+for (const c of CARDS) { if (st[c.key] && st[c.key].base !== c.base) delete st[c.key]; }
+
+const list = document.getElementById('list');
+const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+for (const c of CARDS) {
+  const s = st[c.key] || {};
+  const el = document.createElement('section');
+  el.className = 'card' + (s.done ? ' done' : '');
+  el.dataset.key = c.key;
+  el.innerHTML = `
+    <h2>${esc(c.title)} <span class="st">${s.done ? '直した' : 'まだ'}</span></h2>
+    <ul class="why">${c.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+    <div class="cols">
+      <div class="pdf">${c.img ? `<img loading="lazy" src="${c.img}" alt="PDF ${esc(c.title)}">` : '（画像なし・PDF を開いて見てください）'}</div>
+      <div>
+        <textarea spellcheck="false"></textarea>
+        <label class="chk"><input type="checkbox"> PDF と見較べた（この文で確定）</label>
+        <button class="reset" type="button" style="margin-top:6px">元の文に戻す</button>
+      </div>
+    </div>
+    <details><summary>比べる（今の文の色・本人の元の文・OCR 2回）</summary>
+      <div class="cmp">
+        <div><b>今の文（色＝OCR と合わない字）</b>${c.now}</div>
+        <div><b>本人の元の文</b>${c.user}</div>
+        <div><b>OCR 1回目</b>${c.o1}</div>
+        <div><b>OCR 2回目</b>${c.o2}</div>
+      </div>
+    </details>`;
+  const ta = el.querySelector('textarea'), cb = el.querySelector('input');
+  ta.value = s.text != null ? s.text : c.text;
+  cb.checked = !!s.done;
+  ta.addEventListener('input', () => { st[c.key] = {base: c.base, text: ta.value, done: cb.checked}; save(); });
+  cb.addEventListener('change', () => {
+    st[c.key] = {base: c.base, text: ta.value, done: cb.checked}; save();
+    el.classList.toggle('done', cb.checked);
+    el.querySelector('.st').textContent = cb.checked ? '直した' : 'まだ';
+    update();
+  });
+  el.querySelector('.reset').addEventListener('click', () => {
+    if (!confirm('この問の直しを捨てて元の文に戻しますか？')) return;
+    delete st[c.key]; save(); ta.value = c.text; cb.checked = false;
+    el.classList.remove('done'); el.querySelector('.st').textContent = 'まだ'; update();
+  });
+  list.appendChild(el);
+}
+function update() {
+  const done = CARDS.filter(c => st[c.key] && st[c.key].done).length;
+  document.getElementById('prog').textContent = `直した ${done} / ${CARDS.length} 問`;
+  document.querySelector('#bar i').style.width = (CARDS.length ? 100 * done / CARDS.length : 0) + '%';
+  const f = document.getElementById('filter').value;
+  for (const el of list.children) {
+    const d = !!(st[el.dataset.key] && st[el.dataset.key].done);
+    el.style.display = f === 'all' || (f === 'done') === d ? '' : 'none';
+  }
+}
+document.getElementById('filter').addEventListener('change', update);
+document.getElementById('export').addEventListener('click', () => {
+  const out = {};
+  for (const c of CARDS) if (st[c.key] && st[c.key].done) out[c.key] = {text: st[c.key].text, base: c.base};
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], {type: 'application/json'}));
+  a.download = 'tegaki_naoshi.json';
+  a.click();
+});
+update();
+</script>
+</body>
+</html>
