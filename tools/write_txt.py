@@ -47,6 +47,11 @@ def main():
         for r in rows:
             for n in r['needs']:
                 w.writerow([label(r['y']), r['q'], '', '', '', '', '', n, ''])
+            if r.get('ocr_cover', 1) < 0.85:
+                w.writerow([label(r['y']), r['q'], '', '', '', '', '',
+                            f"OCR と突き合わせられたのは {r['ocr_cover']:.0%}（残りは本人の字のまま・PDF と通し読み）", ''])
+            if 'ocr_cover' not in r and r['q'] == 1:
+                w.writerow([label(r['y']), '全問', '', '', '', '', '', 'RETIO の PDF が未公表のため突き合わせていない', ''])
 
 
 if __name__ == '__main__':

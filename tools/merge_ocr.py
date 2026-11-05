@@ -194,6 +194,7 @@ def main():
     src, b1, b2, out, table = sys.argv[1:6]
     rows = [json.loads(l) for l in open(src, encoding='utf-8')]
     decided, ask, stats = {}, [], {'OCRに': 0, '本人のまま': 0, '確認': 0, '読めず': 0}
+    cover = {}  # (年, 問) → OCR のどちらかと並べられた字の割合
     for y in sorted({r['y'] for r in rows}):
         if not glob.glob(os.path.join(b1, y, 'p*.txt')):
             continue
@@ -208,6 +209,8 @@ def main():
         e1, c1 = read_edits(b1, y, user, qspan)
         e2, c2 = read_edits(b2, y, user, qspan)
         stats['読めず'] += sum(1 for i in range(len(user)) if not c1[i] and not c2[i])
+        for q, (a, b) in qspan.items():
+            cover[y, q] = sum(1 for i in range(a, b) if c1[i] or c2[i]) / max(1, b - a)
         # 重なる直しを1つの塊にする
         allx = sorted([(a, b, o, pg, 1) for a, b, o, pg in e1] + [(a, b, o, pg, 2) for a, b, o, pg in e2])
         clusters = []
@@ -300,6 +303,8 @@ def main():
         r['items'] = [[k, fixed.get(k, k + t)[len(k):]] for k, t in r['items']]
         r['choices'] = [[k, fixed.get('肢' + k, k + t)[len(k):]] for k, t in r['choices']]
         r['fixed'] = sum(len(decided.get((r['y'], r['q'], n), [])) for n in segs)
+        if (r['y'], r['q']) in cover:
+            r['ocr_cover'] = round(cover[r['y'], r['q']], 3)
         keymap[(r['y'], r['q'])] = r
     with open(out, 'w', encoding='utf-8') as f:
         for r in rows:
