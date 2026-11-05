@@ -5,6 +5,7 @@ import csv
 import json
 import os
 import sys
+import unicodedata
 
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -17,7 +18,7 @@ for lo in range(1, 51, 10):
     for n in range(lo, lo + 10):
         q = qs[f'{y}-q{n}']
         s = sh[str(n)]
-        if s['siken答え'] != str(q['answer']) or not s['success答え'].startswith(str(q['answer'])):
+        if s['siken答え'] != str(q['answer']) or not unicodedata.normalize('NFKC', s['success答え']).startswith(str(q['answer'])):
             bad.append((n, q['ok'], s['siken答え'], s['success答え']))
         out.append({'id': f'{y}-{n}', 'year': q['yearLabel'], 'num': n, 'category': q['category'],
                     'stem': q['statementText'], 'extra': q['tablesHtml'],
