@@ -16,7 +16,8 @@ import unicodedata
 
 
 def norm(s):
-    s = unicodedata.normalize('NFKC', s)
+    # 丸数字は残す（NFKC で ①→1 になり、h27 問3「①賃貸借契約」が「1賃貸借契約」になっていた）
+    s = ''.join(p if re.fullmatch(r'[①-⑳]', p) else unicodedata.normalize('NFKC', p) for p in re.split(r'([①-⑳])', s))
     return re.sub(r'\s+', '', s)
 
 
