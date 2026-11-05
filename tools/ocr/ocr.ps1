@@ -3,12 +3,13 @@
 # 年を絞るとき: ... -File tools\ocr\ocr.ps1 -Years r07,r06
 # 出力: ocr\<年>\pNN.txt（ページごと）と ocr\<年>.txt（まとめ）。PDF とページの画像は ocr\_work\ に置く。
 # 試し: -TestPdf <PDF> で任意の PDF を ocr\_test\ に文字にする
-param([string[]]$Years, [string]$TestPdf)
+# 2回目の読み: -Scale 3.5 -OutName ocr2（倍率を変えて読み、1回目と較べる）
+param([string[]]$Years, [string]$TestPdf, [double]$Scale = 2.5, [string]$OutName = 'ocr')
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$outRoot = Join-Path $root 'ocr'
-$work = Join-Path $outRoot '_work'
+$outRoot = Join-Path $root $OutName
+$work = Join-Path (Join-Path $root 'ocr') '_work'
 New-Item -ItemType Directory -Force $work | Out-Null
 
 $B = 'https://www.retio.or.jp/wp-content/uploads'
@@ -66,8 +67,8 @@ foreach ($y in $keys) {
     $pdf = Join-Path $work "$y.pdf"
     if (-not (Test-Path $pdf)) { Invoke-WebRequest -Uri $url -OutFile $pdf -UseBasicParsing }
   }
-  $img = Join-Path $work $y
-  $n = python (Join-Path $PSScriptRoot 'render.py') $pdf $img
+  $img = Join-Path $work "$y-$Scale"
+  $n = python (Join-Path $PSScriptRoot 'render.py') $pdf $img $Scale
   $dir = Join-Path $outRoot $y
   New-Item -ItemType Directory -Force $dir | Out-Null
   $all = @()
