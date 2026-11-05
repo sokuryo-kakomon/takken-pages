@@ -1,6 +1,7 @@
 """目で PDF と見較べた問を genbun.jsonl に戻す（未確認→確認済み）。merge_ocr・fill_choices の後、write_txt の前に流す。
 
-使い方: python tools/apply_hand.py ocr/genbun.jsonl [本人が直した json]
+使い方: python tools/apply_hand.py ocr/genbun.jsonl [本人が直した json ...]
+- tools/mokushi_naoshi.json: Claude が PDF の画像と見較べ、行の順の崩れなどで壊れた所だけ直した問（形は本人の json と同じ）
 - tools/mokushi_ok.tsv: 文を変えずに PDF と1字ずつ見較べて一致した問（年・問・文の md5・日付）。
   後で道具を直して文が変わったら md5 が合わなくなり、未確認に戻る
 - 本人が直した json（直す表の「書き出す」で落ちる tegaki_naoshi.json）: 問ごとの直した文で置き換え、確認済みにする
@@ -43,13 +44,17 @@ def parse(text):
 
 def main():
     src = sys.argv[1]
-    hand = sys.argv[2] if len(sys.argv) > 2 else None
+    # tools/mokushi_naoshi.json（Claude が PDF の画像と見較べて直した問）の後に本人の json（本人の直しが勝つ）
+    hands = [os.path.join(os.path.dirname(__file__), 'mokushi_naoshi.json')] + sys.argv[2:]
     rows = [json.loads(l) for l in open(src, encoding='utf-8')]
     ok = {(x['年'], int(x['問'])): x['md5']
           for x in csv.DictReader(open(os.path.join(os.path.dirname(__file__), 'mokushi_ok.tsv'), encoding='utf-8'),
                                   delimiter='\t')}
-    fixes = json.load(open(hand, encoding='utf-8')) if hand and os.path.exists(hand) else {}
-    n = {'目視で一致': 0, '目視の後に文が変わった': 0, '本人が直した': 0, '直す前の文が変わった': 0}
+    fixes = {}
+    for hand in hands:
+        if os.path.exists(hand):
+            fixes.update(json.load(open(hand, encoding='utf-8')))
+    n = {'目視で一致': 0, '目視の後に文が変わった': 0, '直した文を当てた': 0, '直す前の文が変わった': 0}
     for r in rows:
         key = (r['y'], r['q'])
         f = fixes.get(f'{r["y"]}:{r["q"]}')
@@ -59,7 +64,7 @@ def main():
             else:
                 r['stem'], r['extra'], r['items'], r['choices'] = parse(f['text'])
                 r['verified'], r['hand'] = True, True
-                n['本人が直した'] += 1
+                n['直した文を当てた'] += 1
                 continue
         if key in ok:
             if ok[key] == md5(body(r)):

@@ -34,7 +34,7 @@ def ocr_q(base, y):
     for pg in sorted(glob.glob(os.path.join(base, y, 'p*.txt'))):
         for raw in open(pg, encoding='utf-8'):
             line = norm(raw)
-            m = re.match(r'^【?[問間](\d+)】', line)
+            m = re.match(r'^【?[問間]?(\d+)】', line)
             if m and qn < int(m.group(1)) <= qn + 3:
                 qn = int(m.group(1))
             if qn and line:
@@ -48,8 +48,8 @@ def crop(y, q, pages, dest):
     """PDF のページ画像から、その問の所を切り出して1枚にする。見出しが読めていなければページを丸ごと。"""
     rows = [l.split('\t') for l in open(f'ocr/lines/{y}.tsv', encoding='utf-8').read().split('\n') if l]
     rows = [(p, int(b), int(d), norm(t)) for p, a, b, c, d, t in rows]
-    hd = [x for x in rows if re.match(rf'^【?[問間]{q}】', x[3])]
-    nx = [x for x in rows if re.match(rf'^【?[問間]{q + 1}】', x[3])]
+    hd = [x for x in rows if re.match(rf'^【?[問間]?{q}】', x[3])]
+    nx = [x for x in rows if re.match(rf'^【?[問間]?{q + 1}】', x[3])]
     parts = []
     if hd:
         p0, y0 = hd[0][0], hd[0][1] - 15

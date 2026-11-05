@@ -30,12 +30,13 @@ def read_edits(base, y, user, qspan):
     edits, covered = [], [False] * len(user)
     qn, per_q, keys = 1, {}, {}
     OCRQ[base, y] = per_q
+    joints, prev = JOINTS.setdefault((base, y), set()), ''
     for pg in sorted(glob.glob(os.path.join(base, y, 'p*.txt'))):
         for raw in open(pg, encoding='utf-8').read().split('\n'):
-            m = re.match(r'^【?[問間](\d+)】', norm(raw))
+            m = re.match(r'^【?[問間]?(\d+)】', norm(raw))
             if m and qn < int(m.group(1)) <= qn + 3 and int(m.group(1)) in qspan:
                 qn = int(m.group(1))
-            line = norm(re.sub(r'^【?[問間]\d+】', '', norm(raw)))
+            line = norm(re.sub(r'^【?[問間]?\d+】', '', norm(raw)))
             line = line.replace('この間において', 'この問において').replace('似下この', '(以下この')  # よくある読み違い
             for x, z in OCR_FIX.items():
                 line = line.replace(x, z)
@@ -44,6 +45,9 @@ def read_edits(base, y, user, qspan):
             k = re.match(r'^([1-4]|[アイウエ])(?=\D)', line)
             if k:
                 keys.setdefault(qn, []).append(k.group(1))
+            if prev:
+                joints.add((prev[-4:], line[:4]))
+            prev = line
             text, pages = per_q.setdefault(qn, ['', set()])
             per_q[qn][0] += line
             pages.add(os.path.basename(pg)[:-4])
@@ -103,13 +107,15 @@ LOCAL = Align.PairwiseAligner(mode="local", match_score=2, mismatch_score=-3,  #
                               open_gap_score=-4, extend_gap_score=-1)
 OCRQ = {}  # (読みのフォルダ, 年) → {問: [OCR の文, ページ]}
 SCRAMBLED = set()  # 行の順が入れ替わった問 (年, 問)
+JOINTS = {}  # (読みのフォルダ, 年) → 隣り合う行の継ぎ目 {(前の行の尻4字, 次の行の頭4字)}
 # 行の順が入れ替わった問でも使ってよい直し（本人の文の元にしたサイトの決まった書き換えを戻すもの）
 SAFE_DEL = {'宅地建物取引業者', '宅地建物取引業', '宅建'}
+KAITEI = {('拘禁', '懲役'), ('工事', '造成')}  # サイトが今の法律に合わせた語→原文の語（odd で止めない）
 SAFE_INS = re.compile(r'\(以下この問において「[^」]+」という。\)|\((令和|平成)[^()]{1,20}公表\)|(第\d+条(の\d+)?)?(第\d+項)?(第\d+号)?|1日|。')
 
 
 # OCR が2回とも同じに読む異体字・読み違い（原文に出てこない字）
-OCR_FIX = {'竸': '競', '暸': '瞭', 'カ晩許': 'が免許', 'カ坏': 'が不'}
+OCR_FIX = {'竸': '競', '暸': '瞭', 'カ晩許': 'が免許', 'カ坏': 'が不', '取引十': '取引士', '以下一問': '以下この問', '月1白': '月1日'}
 # 本人の文に無いが、原文では正しい字（サイトの書き換え「拘禁」「建蔽」を「懲役」「建ぺい」「禁錮」に戻す・「タワー」）
 ORIGINAL_ONLY = set('懲錮ぺワ')
 
@@ -129,10 +135,13 @@ def moved(u, o, uq, ocrs):
     """OCR の行の順のずれで、本人の別の所にある文を足す・OCR の別の所にある文を消す直しか。"""
     if o is None or safe_fix(u, o):
         return False
+    # 動いただけなら、その文は本人と OCR で同じ回数ある（h30 問19 は問いの頭の「建築基準法」があり、肢3の「建築基準」の書き足しを動いたと見ていた）
+    # 足す文も、切れ端の半分以上が本人の別の所にある時だけ（r06 問46 は「エネルギー消費性能の」の1切れだけで、括弧書きの定義を落としていた）
     new = [o[i:i + 6] for i in range(0, len(o) - 5, 3) if o[i:i + 6] not in u]
-    if len(o) - len(u) >= 6 and any(g in uq for g in new):
+    if len(o) - len(u) >= 6 and new and \
+            sum(g in uq and uq.count(g) >= max(x.count(g) for x in ocrs) for g in new) * 2 >= len(new):
         return True
-    return len(u) >= 4 and o == '' and any(u in x for x in ocrs)
+    return len(u) >= 4 and o == '' and any(u in x and x.count(u) >= uq.count(u) for x in ocrs)
 
 
 def safe_fix(u, o):
@@ -176,6 +185,8 @@ def ocr_slip(u, o):
         return True  # OCR は「00」「㎡」を落としたり別の字に読んだりする
     if u == '' and len(o) >= 3 and re.fullmatch(r'[ぁ-ん]+', o):
         return True  # 振り仮名（「瑕疵」の「かし」など）
+    if u == '' and o == '・':
+        return True  # 紙のごみの点を中黒に読む（h29 問13「会議の・目的」）
     if o == '' and len(u) <= 4 and u.endswith('。'):
         return True  # 行の尻の短い字（「い。」など）を落とす
     return '開' in o and '0' in u  # 「00」を「開」と読む
@@ -222,8 +233,25 @@ def main():
     cover = {}  # (年, 問) → OCR のどちらかと並べられた字の割合
     gaps = {}  # (年, 問) → OCR のどちらとも並ばなかった本人の字の続き
     # 本人の文のどこにも無い字（OCR が2回とも同じに読み違えた「返遍」「遣産」「首都圈」など）を入れる直しは目で見る
-    userchars = set(''.join(t for r in rows for _, t in segments(r)))
+    usertext = '|'.join(t for r in rows for _, t in segments(r))
+    userchars = set(usertext)
     foreign = lambda o: any(ch not in userchars and ch not in ORIGINAL_ONLY for ch in o)  # noqa: E731
+
+    def odd(user, s, e, o):
+        """1字の置き換えで、前か後ろの隣との2字が、本人の字ならほかの所にも有り、OCR の字なら本人の文のどこにも無い
+        （OCR が2回とも同じに読み違えた「返遠」「申人れ」「花高岩」「火山館」「及ばす」など）。数字は除く。
+        本人の打ち間違い（「考盧」「理曲」）は本人の2字がほかに無いので OCR に直る。"""
+        u = user[s:e]
+        if not 1 <= len(u) == len(o) <= 3 or (u + o).isdigit():
+            return False  # 同じ字数の置き換えだけ（「力上→カヒ」の2字も）
+        if (u, o) in KAITEI:
+            return False
+        a, z = user[s - 1:s], user[e:e + 1]
+        if not (a and z):
+            return False
+        x, w = a + u + z, a + o + z
+        return any(usertext.count(x[i:i + 2]) >= 2 and usertext.count(w[i:i + 2]) == 0 for i in range(len(x) - 1))
+
     for y in sorted({r['y'] for r in rows}):
         if not glob.glob(os.path.join(b1, y, 'p*.txt')):
             continue
@@ -287,6 +315,31 @@ def main():
             # 1つの所の中に収まり、肢の番号（頭の字）は触らない
             inside = seg and e <= seg[3] and (seg[1] == '問い' or seg[1].startswith('文') or s > seg[2] or
                                               (is_key and r1 is not None and r1[:1] == u[:1]))
+            # 行の尻・頭の字を OCR が落とした（継ぎ目の前後が本人の文と同じ）→消さない（r05 問19「なお、こ／の問」）
+            # 1字は落ちたと見て本人のまま。2字は「Aの」が落ちた（h27 問11）のか「農地法→法」の書き換えを消すのか決まらない→目で見る
+            joint = (user[max(0, s - 4):s], user[e:e + 4])
+            at = [x == '' and joint in JOINTS.get((b, y), ()) for x, b in ((r1, b1), (r2, b2))]
+            if any(at) and len(u) == 2 and u not in SAFE_DEL and not ocr_slip(u, '') and not (u == '農地' and user[e:e + 1] == '法'):
+                stats['確認'] += 1
+                q, name = (seg[0], seg[1]) if seg else ('?', '?')
+                ask.append((y, q, name, u, '（行の尻で落ちたか）', '', user[max(0, s - 12):s] + '［' + u + '］' + user[e:e + 12], xs[0][3]))
+                continue
+            r1, r2 = (u if a and len(u) == 1 else x for x, a in zip((r1, r2), at))
+            # 紙のごみの点を「.」に読む（h27 問2「Dに」→「D.に」）。数字の間（7.5%）は読みのとおり
+            if u == '' and '.' in (r1, r2) and not (user[s - 1:s].isdigit() and user[e:e + 1].isdigit()):
+                stats['本人のまま'] += 1
+                continue
+            if u and r1 in (u, None) and r2 in (u, None) and u in (r1, r2):
+                stats['本人のまま'] += 1
+                continue
+            # 数字の隣に数字を足す直しは、OCR の「800→8開」の片割れ（r03-10 問16 が 8800 に）か本当の違いか決まらない→目で見る
+            if u == '' and any(x and re.fullmatch(r'[\d,]+', x) for x in (r1, r2)) and (
+                    user[s - 1:s].isdigit() or user[e:e + 1].isdigit()):
+                stats['確認'] += 1
+                q, name = (seg[0], seg[1]) if seg else ('?', '?')
+                ask.append((y, q, name, u, r1 if r1 is not None else '（読めず）', r2 if r2 is not None else '（読めず）',
+                            user[max(0, s - 12):s] + '［］' + user[e:e + 12], xs[0][3]))
+                continue
             one = r1 if r2 is None else r2 if r1 is None else None  # 片方だけ読めた
             slip = r1 is not None and r1 == r2 and ocr_slip(u, r1)
             if slip or (one is not None and ocr_slip(u, one)) or \
@@ -298,11 +351,13 @@ def main():
             elif seg and moved(u, r1 if r1 is not None else r2, user[slice(*qspan[seg[0]])],
                                [OCRQ.get((d, y), {}).get(seg[0], [''])[0] for d in (b1, b2)]):
                 stats['本人のまま'] += 1  # 行の順のずれで、文が別の肢へ動いただけ
-            elif seg and (y, seg[0]) in SCRAMBLED and not (r1 is not None and r1 == r2 and safe_fix(u, r1)):
-                stats['本人のまま'] += 1  # 入れ替わったページは決まった型の直しだけ
+            elif seg and (y, seg[0]) in SCRAMBLED and not (r1 is not None and r1 == r2):
+                # 入れ替わったページで2回の読みが食い違う所は当て違いのことが多い→本人のまま
+                # （2回が同じ読みの所は下のふつうの道へ。前は決まった型だけ通し、他は黙って本人のままにしていた＝r02-12 問19 の「等」が残った）
+                stats['本人のまま'] += 1
             # 本人の字を13字以上消す・OCR の字を61字以上入れるのは、OCR の行落ちや順の入れ替えのことがあるので目で見る
             elif r1 is not None and r1 == r2 and r1 != u and inside and len(u) <= 12 and len(r1) <= 60 \
-                    and not foreign(r1):
+                    and not foreign(r1) and not odd(user, s, e, r1):
                 decided.setdefault((y, seg[0], seg[1]), []).append((s - seg[2], e - seg[2], r1))
                 stats['OCRに'] += 1
             elif (r1 == u or r2 == u) and r1 != r2:
@@ -349,7 +404,21 @@ def main():
         # 公開してよいのは、本人の字が全部 OCR と並び、確認表に残りが無い問だけ（直るまで「未確認」）
         # 並ばなかった字には、元にしたサイトの書き足し（「令和2年の法改正により…」など）が残っていることがある
         r['yomezu'] = [g for g in gaps.get((r['y'], r['q']), []) if not ocr_slip(g, '')]  # 行の尻の「い。」などは除く
-        r['verified'] = r.get('ocr_cover', 0) >= 0.85 and not r['yomezu'] and not any(
+        # 並ばなかった6字以上の続きが2回の読みのその問の文にそのまま有る＝行の順が崩れて並ばなかっただけ（r03-12 問49）
+        ocrq = [OCRQ.get((d, r['y']), {}).get(r['q'], [''])[0] for d in (b1, b2)]
+        def found(g):  # 肢の番号の所で切り、12字以上の切れは2回とも有り（短い切れは「宅地建物取引業者」などどこにでも有る）、他は「る。」だけ
+            parts = [x for x in re.split(r'(?<=。)[1-4アイウエ]', g) if x]
+            return len(g) >= 6 and all(all(x in o for o in ocrq) if len(x) >= 12 else len(x) <= 3 and x.endswith('。')
+                                       for x in parts)
+        same = [g for g in r['yomezu'] if found(g)]
+        r['yomezu'] = [g for g in r['yomezu'] if g not in same]
+        if same and 'ocr_cover' in r:
+            r['ocr_cover'] = round(r['ocr_cover'] + sum(map(len, same)) / max(1, len(''.join(t for _, t in segments(r)))), 3)
+        # 金額・面積の数字は、2回の読みのどちらかにそのまま有る物だけ（サイトが消費税10%に合わせて金額を書き換えている）
+        body = '|'.join(norm(t) for t in [r['stem']] + r['extra'] + [t for _, t in r['items'] + r['choices']])  # 肢の番号は除く
+        r['kazu'] = [x for x in re.findall(r'\d[\d,]*', body)
+                     if len(x.replace(',', '')) >= 3 and not any(x in o.replace('開', '00').replace('.', ',') for o in ocrq)]
+        r['verified'] = r.get('ocr_cover', 0) >= 0.85 and not r['yomezu'] and not r['kazu'] and not any(
             a[0] == r['y'] and str(a[1]) == str(r['q']) for a in ask)
         if any(n.startswith('改題') for n in r['needs']):
             kaidai(r, [OCRQ.get((d, r['y']), {}).get(r['q'], [''])[0] for d in (b1, b2)])

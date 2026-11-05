@@ -5,12 +5,15 @@
 - 選択肢の頭（「１．」「１　」）をそろえる
 - 略語（宅建士・宅建業者 など）を原文の言葉に戻す
 - 選択肢が無い問・原文に無い語が残る問は needs に理由を入れる（直すのは本人）
+- tools/modoshi.tsv: 元にしたサイトの書き換え（改題・注書き・法の名）を問ごとに原文へ戻す（OCR 2回か PDF の画像で確かめた物だけ）
 """
+import csv
 import json
+import os
 import re
 import sys
 
-LABELS = {'税その他', '法令制限', '宅建業法', '権利関係'}
+LABELS = {'税その他', '法令制限', '宅建業法', '宅地建物取引業法', '権利関係'}  # 略語を戻した後でも消す
 # 長い語から先に戻す
 ABBR = [
     ('宅建業法', '宅地建物取引業法'),
@@ -61,11 +64,19 @@ def main():
     src, out = sys.argv[1], sys.argv[2]
     s = open(src, encoding='utf-8-sig').read()
     heads = list(re.finditer(r'【([^】]*)】', s))
-    rows = []
+    modoshi = {}
+    for x in csv.DictReader(open(os.path.join(os.path.dirname(__file__), 'modoshi.tsv'), encoding='utf-8'), delimiter='	'):
+        modoshi.setdefault((x['年'], int(x['問'])), []).append((x['前'], x['後']))
+    rows, missing = [], []
     for i, h in enumerate(heads):
         y, q = year_id(h.group(1))
         end = heads[i + 1].start() if i + 1 < len(heads) else len(s)
         stem, extra, items, choices = parse(expand(s[h.end():end]))
+        for a, b in modoshi.get((y, q), []):
+            if not any(a in t for t in [stem] + extra + [x for _, x in items + choices]):
+                missing.append(f'{y} 問{q} {a}')
+            stem, extra = stem.replace(a, b), [t.replace(a, b) for t in extra]
+            items, choices = [[k, t.replace(a, b)] for k, t in items], [[k, t.replace(a, b)] for k, t in choices]
         needs = []
         if [c[0] for c in choices] != ['1', '2', '3', '4']:
             needs.append('選択肢1〜4が無い')
@@ -77,6 +88,8 @@ def main():
         for r in rows:
             f.write(json.dumps(r, ensure_ascii=False) + '\n')
     print(len(rows), 'questions,', sum(1 for r in rows if r['needs']), 'need fixes')
+    for m in missing:
+        print('modoshi.tsv の「前」が見つからない:', m)
 
 
 if __name__ == '__main__':

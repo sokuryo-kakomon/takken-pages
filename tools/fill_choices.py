@@ -25,7 +25,7 @@ def ocr_tail(base, y, q):
         if not name.endswith('.txt'):
             continue
         for raw in open(os.path.join(d, name), encoding='utf-8'):
-            m = re.match(r'^【?[問間](\d+)】', norm(raw))
+            m = re.match(r'^【?[問間]?(\d+)】', norm(raw))
             if m:
                 on = int(m.group(1)) == q
             if on:
