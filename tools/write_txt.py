@@ -11,7 +11,7 @@ import sys
 ERA = {'r': '令和', 'h': '平成'}
 ZEN = str.maketrans({**{chr(c): chr(c + 0xFEE0) for c in range(ord('A'), ord('Z') + 1)},
                      **{chr(c): chr(c + 0xFEE0) for c in range(ord('a'), ord('z') + 1)},
-                     '(': '（', ')': '）'})
+                     '(': '（', ')': '）', '~': '～'})
 
 
 def pdf_style(s):
@@ -47,9 +47,9 @@ def main():
         for r in rows:
             for n in r['needs']:
                 w.writerow([label(r['y']), r['q'], '', '', '', '', '', n, ''])
-            if r.get('ocr_cover', 1) < 0.85:
-                w.writerow([label(r['y']), r['q'], '', '', '', '', '',
-                            f"OCR と突き合わせられたのは {r['ocr_cover']:.0%}（残りは本人の字のまま・PDF と通し読み）", ''])
+            for g in r.get('yomezu', []):
+                w.writerow([label(r['y']), r['q'], '', '', g, '', '',
+                            'OCR と並ばなかった本人の字（原文に無い書き足しのことがある・PDF と見較べる）', ''])
             if 'ocr_cover' not in r and r['q'] == 1:
                 w.writerow([label(r['y']), '全問', '', '', '', '', '', 'RETIO の PDF が未公表のため突き合わせていない', ''])
 

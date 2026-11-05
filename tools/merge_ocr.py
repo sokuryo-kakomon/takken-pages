@@ -37,6 +37,8 @@ def read_edits(base, y, user, qspan):
                 qn = int(m.group(1))
             line = norm(re.sub(r'^【?[問間]\d+】', '', norm(raw)))
             line = line.replace('この間において', 'この問において').replace('似下この', '(以下この')  # よくある読み違い
+            for x, z in OCR_FIX.items():
+                line = line.replace(x, z)
             if len(line) < 3 or re.fullmatch(r'[-‐ー一\d]+', line):
                 continue  # ページ番号など
             k = re.match(r'^([1-4]|[アイウエ])(?=\D)', line)
@@ -103,8 +105,13 @@ OCRQ = {}  # (読みのフォルダ, 年) → {問: [OCR の文, ページ]}
 SCRAMBLED = set()  # 行の順が入れ替わった問 (年, 問)
 # 行の順が入れ替わった問でも使ってよい直し（本人の文の元にしたサイトの決まった書き換えを戻すもの）
 SAFE_DEL = {'宅地建物取引業者', '宅地建物取引業', '宅建'}
-SAFE_INS = re.compile(r'\(以下この問において「[^」]+」という。\)|(第\d+条(の\d+)?)?(第\d+項)?(第\d+号)?|1日|。')
+SAFE_INS = re.compile(r'\(以下この問において「[^」]+」という。\)|\((令和|平成)[^()]{1,20}公表\)|(第\d+条(の\d+)?)?(第\d+項)?(第\d+号)?|1日|。')
 
+
+# OCR が2回とも同じに読む異体字・読み違い（原文に出てこない字）
+OCR_FIX = {'竸': '競', '暸': '瞭', 'カ晩許': 'が免許', 'カ坏': 'が不'}
+# 本人の文に無いが、原文では正しい字（サイトの書き換え「拘禁」「建蔽」を「懲役」「建ぺい」「禁錮」に戻す・「タワー」）
+ORIGINAL_ONLY = set('懲錮ぺワ')
 
 KEYSLIP = {'工': 'エ', 'ェ': 'エ', 'l': '1', 'I': '1', '|': '1', 'ィ': 'イ', 'ゥ': 'ウ', 'ァ': 'ア'}
 
@@ -154,7 +161,8 @@ def align(win, line):
 # OCR が2回とも同じに読み違える字（本人の字を正とする）
 SMALL = dict(zip('っゃゅょぁぃぅぇぉッャュョァィゥェォ', 'つやゆよあいうえおツヤユヨアイウエオ'))
 CONF = {frozenset(x) for x in ['力カ', '工エ', '乂又', 'cC', 'l1', 'I1', '口ロ', '二ニ', '一ー', '夕タ', '卜ト',
-                               '八ハ', '滅減', '上土', '己記', '問間', 'へヘ', 'りリ', 'ェエ', '工ェ', 'ぺペ', 'べベ']}
+                               '八ハ', '滅減', '上土', '己記', '問間', 'へヘ', 'りリ', 'ェエ', '工ェ', 'ぺペ', 'べベ',
+                               '還遍', '遺遣', '圏圈']}
 
 
 def ocr_slip(u, o):
@@ -195,6 +203,10 @@ def main():
     rows = [json.loads(l) for l in open(src, encoding='utf-8')]
     decided, ask, stats = {}, [], {'OCRに': 0, '本人のまま': 0, '確認': 0, '読めず': 0}
     cover = {}  # (年, 問) → OCR のどちらかと並べられた字の割合
+    gaps = {}  # (年, 問) → OCR のどちらとも並ばなかった本人の字の続き
+    # 本人の文のどこにも無い字（OCR が2回とも同じに読み違えた「返遍」「遣産」「首都圈」など）を入れる直しは目で見る
+    userchars = set(''.join(t for r in rows for _, t in segments(r)))
+    foreign = lambda o: any(ch not in userchars and ch not in ORIGINAL_ONLY for ch in o)  # noqa: E731
     for y in sorted({r['y'] for r in rows}):
         if not glob.glob(os.path.join(b1, y, 'p*.txt')):
             continue
@@ -211,6 +223,14 @@ def main():
         stats['読めず'] += sum(1 for i in range(len(user)) if not c1[i] and not c2[i])
         for q, (a, b) in qspan.items():
             cover[y, q] = sum(1 for i in range(a, b) if c1[i] or c2[i]) / max(1, b - a)
+            # OCR のどちらとも並ばなかった本人の字の続き（原文に無い字＝元にしたサイトの書き足しのことがある）
+            gaps[y, q] = [user[a + m.start():a + m.end()] for m in re.finditer(
+                r'x+', ''.join('o' if c1[i] or c2[i] else 'x' for i in range(a, b)))]
+            if os.environ.get('DEBUG_Q') == f'{y}:{q}':
+                print('読めず', gaps[y, q])
+                for x in sorted(e1 + e2):
+                    if a <= x[0] < b:
+                        print(' 直し', x[0] - a, repr(user[x[0]:x[1]]), '→', repr(x[2]))
         # 重なる直しを1つの塊にする
         allx = sorted([(a, b, o, pg, 1) for a, b, o, pg in e1] + [(a, b, o, pg, 2) for a, b, o, pg in e2])
         clusters = []
@@ -242,6 +262,8 @@ def main():
             if is_key:
                 # 肢の番号の所: OCR の番号の読み違い（工→エ など）は本人の番号に戻し、番号の後ろだけ較べる
                 r1, r2 = (keyfix(u[0], x) if x is not None else None for x in (r1, r2))
+                # 番号ごと落ちても、番号の後ろが決まった型の書き換え（宅地建物取引業者 など）だけなら番号は残して外す
+                r1, r2 = (u[0] if x == '' and u[1:] in SAFE_DEL else x for x in (r1, r2))
                 if r1 == '' or r2 == '':
                     stats['本人のまま'] += 1  # OCR が番号を落とした
                     continue
@@ -262,7 +284,8 @@ def main():
             elif seg and (y, seg[0]) in SCRAMBLED and not (r1 is not None and r1 == r2 and safe_fix(u, r1)):
                 stats['本人のまま'] += 1  # 入れ替わったページは決まった型の直しだけ
             # 本人の字を13字以上消す・OCR の字を61字以上入れるのは、OCR の行落ちや順の入れ替えのことがあるので目で見る
-            elif r1 is not None and r1 == r2 and r1 != u and inside and len(u) <= 12 and len(r1) <= 60:
+            elif r1 is not None and r1 == r2 and r1 != u and inside and len(u) <= 12 and len(r1) <= 60 \
+                    and not foreign(r1):
                 decided.setdefault((y, seg[0], seg[1]), []).append((s - seg[2], e - seg[2], r1))
                 stats['OCRに'] += 1
             elif (r1 == u or r2 == u) and r1 != r2:
@@ -306,6 +329,11 @@ def main():
         r['fixed'] = sum(len(decided.get((r['y'], r['q'], n), [])) for n in segs)
         if (r['y'], r['q']) in cover:
             r['ocr_cover'] = round(cover[r['y'], r['q']], 3)
+        # 公開してよいのは、本人の字が全部 OCR と並び、確認表に残りが無い問だけ（直るまで「未確認」）
+        # 並ばなかった字には、元にしたサイトの書き足し（「令和2年の法改正により…」など）が残っていることがある
+        r['yomezu'] = [g for g in gaps.get((r['y'], r['q']), []) if not ocr_slip(g, '')]  # 行の尻の「い。」などは除く
+        r['verified'] = r.get('ocr_cover', 0) >= 0.85 and not r['yomezu'] and not any(
+            a[0] == r['y'] and str(a[1]) == str(r['q']) for a in ask)
         keymap[(r['y'], r['q'])] = r
     with open(out, 'w', encoding='utf-8') as f:
         for r in rows:
