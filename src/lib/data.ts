@@ -8,13 +8,13 @@ import type { Question, Site, Guides, StaticPage, QuestionIndex, Exam, Year, Cat
 // サーバー側（ビルド時）専用。React の island からは import しない
 // （questions.json は 700KB あり、クライアントへ丸ごと送りたくない）。
 
-export const SITE_NAME = '測量士・測量士補 過去問ドリル';
+export const SITE_NAME = '宅建 過去問ドリル';
 
 export const site = siteJson as Site;
 export const guides = guidesJson as Guides;
 export const pages = pagesJson as Record<'about' | 'privacy', StaticPage>;
 
-// 測量士（午前）は旧サイトから続く /r07/q1/、測量士補は /hoshi/r07/q1/。
+// 宅建は /r07/q1/。hoshi は測量士サイトから写した名残で、空のまま（questions_hoshi.json は []）
 export const shiQuestions = (questionsJson as Question[]).map((q) => ({ ...q, exam: 'shi' as const }));
 export const hoshiQuestions = (hoshiJson as Question[]).map((q) => ({ ...q, exam: 'hoshi' as const }));
 export const questions: Question[] = [...shiQuestions, ...hoshiQuestions];
@@ -23,16 +23,17 @@ export interface ExamInfo {
   id: Exam; name: string; full: string; base: string; part: string; years: Year[]; questions: Question[];
 }
 export const EXAMS: Record<Exam, ExamInfo> = {
-  shi: { id: 'shi', name: '測量士', full: '測量士試験', base: '', part: '午前（択一式）', years: site.years, questions: shiQuestions },
+  shi: { id: 'shi', name: '宅建', full: '宅地建物取引士資格試験', base: '', part: '', years: site.years, questions: shiQuestions },
   hoshi: { id: 'hoshi', name: '測量士補', full: '測量士補試験', base: '/hoshi', part: '択一式', years: site.hoshiYears, questions: hoshiQuestions },
 };
 // 載せている年度の幅（例 long「平成30年度〜令和8年度」・short「平成30〜令和8年」）と年数
 export function yearSpan(exam: Exam = 'shi') {
   const ys = EXAMS[exam].years.filter((y) => EXAMS[exam].questions.some((q) => q.year === y.id));
   const [newest, oldest] = [ys[0], ys[ys.length - 1]];
-  return { long: `${oldest.label}〜${newest.label}`, short: `${oldest.label.replace('年度', '')}〜${newest.label.replace('度', '')}`, n: ys.length };
+  const bare = (l: string) => l.replace(/（.*）/, '');
+  return { long: `${bare(oldest.label)}〜${bare(newest.label)}`, short: `${bare(oldest.label).replace('年度', '')}〜${bare(newest.label).replace('度', '')}`, n: ys.length };
 }
-export const SITE_TAGLINE = `測量士・測量士補試験の過去問 ${yearSpan('shi').n}年分の演習と解説`;
+export const SITE_TAGLINE = `宅建試験の過去問 ${yearSpan('shi').n}回分の演習`;
 export const examOfPath = (path: string): Exam => (path.startsWith('/hoshi') ? 'hoshi' : 'shi');
 
 // 測量士の名前のまま使っている所が多いので、years / categories は測量士のもの

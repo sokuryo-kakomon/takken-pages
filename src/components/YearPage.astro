@@ -4,36 +4,32 @@ import ListStatus from './react/ListStatus';
 import { ofYear, pageTitle, site, EXAMS } from '../lib/data';
 import type { Exam, Year } from '../lib/types';
 
-// 年度別の一覧。測量士は /r07/、測量士補は /hoshi/r07/
+// 年度別の一覧 /r07/
 interface Props { exam: Exam; y: Year }
 const { exam, y } = Astro.props;
 const ex = EXAMS[exam];
 const qs = ofYear(y.id, exam);
 const path = `${ex.base}/${y.id}/`;
-const title = exam === 'shi'
-  ? pageTitle(`測量士 ${y.label} 午前 全${qs.length}問の解答と解説`)
-  : pageTitle(`測量士補 ${y.label} 全${qs.length}問の解答と解説`);
-const description = `${y.label}（${y.examDate}実施）${ex.full} ${exam === 'shi' ? '午前・択一式' : '択一式'}の全${qs.length}問を、解答と詳しい解説つきで掲載。1問ずつ解いて正誤を記録できます。`;
+const title = pageTitle(`宅建 ${y.label} 過去問 全${qs.length}問と正解`);
+const description = `${y.label}（${y.examDate}実施）${ex.full}の全${qs.length}問を、原文のまま正解番号つきで掲載。1問ずつ解いて正誤を記録できます。`;
 const jsonLd = {
   '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, description, url: site.url + path,
 };
-const exq = exam === 'shi' ? '' : 'exam=hoshi&';
 ---
 <App title={title} description={description} path={path} jsonLd={jsonLd}>
-  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ {exam === 'hoshi' && <><a href="/hoshi/">測量士補</a> ／ </>}{y.label}</nav>
-  <h1 class="text-2xl mb-1">{y.label} {ex.full} {ex.part}</h1>
+  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ {y.label}</nav>
+  <h1 class="text-2xl mb-1">{y.label} {ex.full}</h1>
   <p class="text-ink-soft text-sm mb-4">{y.examDate}実施 ・ 全{qs.length}問</p>
   <div class="flex flex-wrap gap-2 mb-6">
-    <a class="btn btn-primary" href={`/practice/?${exq}year=${y.id}`}>この年度を通しで解く</a>
-    {y.pdf.questions && <a class="btn btn-ghost btn-sm" href={y.pdf.questions} target="_blank" rel="noopener">公式問題 PDF</a>}
-    {y.pdf.answers && <a class="btn btn-ghost btn-sm" href={y.pdf.answers} target="_blank" rel="noopener">公式解答 PDF</a>}
+    <a class="btn btn-primary" href={`/practice/?year=${y.id}`}>この年度を通しで解く</a>
+    {y.pdf.questions && <a class="btn btn-ghost btn-sm" href={y.pdf.questions} target="_blank" rel="noopener">公式の問題・正解番号 PDF</a>}
   </div>
   <ol class="card divide-y divide-line">
     {qs.map((q) => (
       <li data-qid={q.id}>
         <a href={q.url} class="flex gap-3 items-start p-3 no-underline text-ink hover:bg-paper-deep/60">
           <span class="mark-st w-5 shrink-0 text-center pt-0.5"></span>
-          <span class="w-14 shrink-0 font-bold">第{q.num}問</span>
+          <span class="w-12 shrink-0 font-bold">問{q.num}</span>
           <span class="min-w-0 flex-1">
             <span class="chip text-[.7rem] mr-2 align-middle" style={q.categoryStyle}>{q.categoryIcon} {q.category}</span>
             <span class="text-sm text-ink-soft">{q.statementText.slice(0, 72)}…</span>

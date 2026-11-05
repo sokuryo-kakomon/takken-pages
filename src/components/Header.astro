@@ -8,7 +8,6 @@ const hoshi = examOfPath(path) === 'hoshi';
 const nav = [
   { href: '/practice/', label: '演習', mobile: true, exam: true },
   { href: hoshi ? '/hoshi/#select' : '/#select', label: '年度・分野', mobile: false, exam: false },
-  { href: '/guide/', label: 'ガイド', mobile: true, exam: false },
   { href: '/progress/', label: '成績表', mobile: true, exam: true },
 ];
 ---
@@ -19,10 +18,10 @@ const nav = [
       <span class="hidden md:inline whitespace-nowrap">{SITE_NAME}</span>
       {/* スマホでは名前が長く右のメニューにかぶるので2段にする */}
       <span class="md:hidden flex flex-col leading-tight whitespace-nowrap">
-        <span class="text-[.7rem] font-sans tracking-wider text-ink-soft">測量士・測量士補</span>
+        <span class="text-[.7rem] font-sans tracking-wider text-ink-soft">宅建</span>
         <span class="text-lg">過去問ドリル</span>
       </span>
-      <span class="hidden lg:inline text-[.72rem] text-ink-soft font-sans font-normal tracking-wider">過去問 {yearSpan().n}年分の演習と解説</span>
+      <span class="hidden lg:inline text-[.72rem] text-ink-soft font-sans font-normal tracking-wider">過去問 {yearSpan().n}回分・全問原文</span>
     </a>
     <nav class="ml-auto flex items-center gap-0.5 text-sm">
       {nav.map((n) => (

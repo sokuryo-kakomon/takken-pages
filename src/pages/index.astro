@@ -3,15 +3,15 @@ import Base from '../layouts/Base.astro';
 import TopHome from '../components/TopHome.astro';
 import { SITE_NAME, categories, shiQuestions, site, yearSpan } from '../lib/data';
 
-// トップは測量士（午前）。測量士補は /hoshi/
+// トップ。宅建試験の過去問（R7 から新しい順）
 const total = shiQuestions.length;
 const span = yearSpan('shi');
-const title = `${SITE_NAME}｜${span.short} 全問解説`;
-const description = `測量士 過去問（午前・択一式）${span.long} 全${total}問を、途中の考え方まで書いた解説つきで演習できます。解答を選ぶと即判定、年度別・分野別の成績を自動記録。登録不要・無料。`;
+const title = `${SITE_NAME}｜宅建 過去問 ${span.short} 全${total}問`;
+const description = `宅建（宅地建物取引士資格試験）の過去問 ${span.long} 全${total}問を、問題文は原文のまま1問1ページで演習できます。解答を選ぶと即判定、年度別・分野別の成績を自動記録。登録不要・無料。`;
 const steps = [
-  { n: '一', t: '年度か分野を選ぶ', d: '年度ごとに通しで解くか、苦手な分野だけ絞るか。未回答・要復習だけを出すこともできます。' },
+  { n: '一', t: '年度か分野を選ぶ', d: '年度ごとに50問を通しで解くか、苦手な分野だけ絞るか。未回答・要復習だけを出すこともできます。' },
   { n: '二', t: '解答を選ぶ', d: '選択肢を押すとその場で正誤が出ます。結果は端末に自動で記録され、登録は要りません。' },
-  { n: '三', t: '解説を読む', d: '正解の理由だけでなく、誤りの選択肢が「どこが、なぜ」誤りかまで。条文はその場でタップして確認できます。' },
+  { n: '三', t: '正解を確かめる', d: '正解番号は試験実施機関の公表どおり。複数正解・正解なしの問も、公表どおりに判定します。' },
   { n: '四', t: '成績表で弱点を絞る', d: '年度別・分野別の正答率と、間違えた問題の一覧。要復習の問題だけをもう一度解けます。' },
 ];
 const jsonLd = {
@@ -20,7 +20,7 @@ const jsonLd = {
 };
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
-  <TopHome exam="shi" bg="測">
+  <TopHome exam="shi" bg="宅">
   <!-- つかい方 -->
   <section id="howto">
     <h2 class="text-2xl mb-4">このサイトのつかい方</h2>
@@ -35,34 +35,31 @@ const jsonLd = {
     </ol>
   </section>
 
-  <!-- 解説の方針 -->
+  <!-- 掲載の方針 -->
   <section>
     <div class="card p-6 md:p-8 md:grid md:grid-cols-2 md:gap-10">
       <div>
-        <h2 class="text-2xl mb-3">解説の書き方について</h2>
-        <p class="text-ink-soft leading-relaxed mb-3">
-          測量士試験は受験者数がそれほど多くない国家試験のため、市販の教材が限られています。公式に配布されるのは<b>問題と正解番号だけ</b>で、「なぜその答えになるのか」までは示されません。とくに計算問題は、正解の数字を見ただけでは自分の解き方のどこが間違っていたのか分かりません。当サイトは、その<b>途中の考え方</b>を一問ずつ書き残すことを目的に作っています。
-        </p>
+        <h2 class="text-2xl mb-3">掲載の方針</h2>
         <ul class="text-sm text-ink-soft leading-relaxed space-y-2 list-disc pl-5">
-          <li><b class="text-ink">正解以外の選択肢も説明します。</b>「どこが、なぜ誤りなのか」を選択肢ごとに書いています。誤りの選択肢を切れるようになることが、択一式では得点に直結します。</li>
-          <li><b class="text-ink">根拠の条文を示します。</b>法規の問題では、測量法や作業規程の準則の該当条文を明記し、その場で条文を確認できるようにしています。</li>
-          <li><b class="text-ink">計算過程を省略しません。</b>公式の適用、数値の代入、単位の換算まで手順を分けて書いています。</li>
-          <li><b class="text-ink">原理から説明します。</b>たとえば GNSS 水準測量なら「標高＝楕円体高−ジオイド高」という関係から、各規定の理由をたどれるようにしています。</li>
+          <li><b class="text-ink">問題文は原文のまま。</b>一般財団法人 不動産適正取引推進機構が公表している試験問題を、言い回しを変えずに載せています。出典は各問題のページに記載しています。</li>
+          <li><b class="text-ink">正解番号は公表どおり。</b>試験後に複数正解・正解なしとされた問も、公表どおりに判定します。</li>
+          <li><b class="text-ink">1問1ページ。</b>年度と問番号で、どの問題にもすぐ戻れます（例：令和7年度 問1 は /r07/q1/）。</li>
+          <li><b class="text-ink">解説は準備中です。</b>出題当時の法令と今の法令が違う問は、改正の注意書きと今の法令での答えを添える予定です。</li>
         </ul>
       </div>
       <div class="mt-8 md:mt-0">
-        <h2 class="text-2xl mb-3">{span.n}年分{total}問の出題分野</h2>
-        <p class="text-sm text-ink-soft mb-3">当サイトの分類で集計したものです。分野の偏りをつかむ目安にしてください。</p>
+        <h2 class="text-2xl mb-3">{span.n}回分{total}問の出題分野</h2>
+        <p class="text-sm text-ink-soft mb-3">問番号による例年の区分で集計したものです。</p>
         <div class="qhtml"><div class="tbl-wrap"><table>
           <thead><tr><th>分野</th><th class="text-right">問題数</th><th class="text-right">割合</th></tr></thead>
           <tbody>
             {categories.map((c) => (
-              <tr><td><a href={`/guide/${c.slug}/`} class="no-underline">{c.icon} {c.name}</a></td><td class="text-right">{c.count}問</td><td class="text-right">{(c.count / total * 100).toFixed(1)}%</td></tr>
+              <tr><td><a href={`/practice/?cat=${c.slug}`} class="no-underline">{c.icon} {c.name}</a></td><td class="text-right">{c.count}問</td><td class="text-right">{(c.count / total * 100).toFixed(1)}%</td></tr>
             ))}
           </tbody>
         </table></div></div>
         <p class="text-sm text-ink-soft leading-relaxed mt-3">
-          <b class="text-ink">地図編集・GIS、基準点測量、写真測量、応用測量</b>の4分野で全体の約6割を占めます。計算問題は解き方の型が決まっているため演習量がそのまま得点になり、<b class="text-ink">法規・測量の基準</b>は条文の言い回しを覚えているかで決まるので短時間で仕上げやすい分野です。
+          1回50問のうち<b class="text-ink">宅建業法が20問</b>（問26〜45）、権利関係が14問、法令上の制限が8問、税・価格の評定が3問。問46〜50 の5問は登録講習の修了者が免除されます。
         </p>
       </div>
     </div>

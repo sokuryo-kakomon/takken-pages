@@ -7,10 +7,10 @@ import { $progress, $bookmarks, isWeak, toggleBookmark } from '../../store/progr
 import QuestionCard from './QuestionCard';
 
 // 演習画面。条件を選ぶ → 1問ずつ解く → 結果、の3画面。
-// 問題本文は /data/q/<id>.json を1問ずつ取りに行く（全140問を最初に読むと約900KBになるため）。
+// 問題本文は /data/q/<id>.json を1問ずつ取りに行く（全問を最初に読むと数MBになるため）。
 
 const S = siteJson as unknown as Site;
-const EXAM_NAME: Record<Exam, string> = { shi: '測量士（午前）', hoshi: '測量士補' };
+const EXAM_NAME: Record<Exam, string> = { shi: '宅建', hoshi: '（未使用）' };
 const yearsOf = (e: Exam) => (e === 'hoshi' ? S.hoshiYears : S.years);
 type Mode = 'order' | 'random' | 'unanswered' | 'wrong' | 'weak' | 'bookmark';
 const MODES: { v: Mode; label: string; hint: string }[] = [
@@ -137,7 +137,7 @@ export default function PracticeApp() {
             <ul className="divide-y divide-line">
               {wrong.map((x) => (
                 <li key={x.id} className="py-2 text-sm flex gap-3">
-                  <a href={x.url} className="font-bold shrink-0 no-underline">{x.exam === 'hoshi' ? '補 ' : ''}{yearsOf(x.exam).find((y) => y.id === x.year)?.short} 第{x.num}問</a>
+                  <a href={x.url} className="font-bold shrink-0 no-underline">{x.exam === 'hoshi' ? '補 ' : ''}{yearsOf(x.exam).find((y) => y.id === x.year)?.short} 問{x.num}</a>
                   <span className="text-ink-soft min-w-0 truncate">{x.excerpt}</span>
                 </li>
               ))}
@@ -164,7 +164,7 @@ export default function PracticeApp() {
         </div>
         {cur ? (
           <>
-            <div className="text-sm text-ink-soft">{cur.exam === 'hoshi' ? '測量士補 ' : ''}{cur.yearLabel} 第{cur.num}問 ・ {cur.categoryIcon} {cur.category} ・ <a href={cur.url}>この問題のページ</a></div>
+            <div className="text-sm text-ink-soft">{cur.exam === 'hoshi' ? '測量士補 ' : ''}{cur.yearLabel} 問{cur.num} ・ {cur.categoryIcon} {cur.category} ・ <a href={cur.url}>この問題のページ</a></div>
             <QuestionCard q={cur} lawRefs={S.lawRefs} mode="practice" onAnswered={(ok) => setResults((r) => ({ ...r, [id]: ok }))} />
           </>
         ) : (
@@ -187,12 +187,15 @@ export default function PracticeApp() {
   return (
     <div className="space-y-5">
       <div className="card p-5">
+        {/* 試験が1つ（宅建だけ）のときは出さない */}
+        {index.some((x) => x.exam === 'hoshi') && <>
         <div className="font-bold mb-2">試験</div>
         <div className="flex flex-wrap gap-2 mb-5">
           {(['shi', 'hoshi'] as Exam[]).filter((e) => index.some((x) => x.exam === e)).map((e) => (
             <button key={e} className={sel + (exam === e ? on : off)} onClick={() => { setExam(e); setYear('all'); showExam(e); }}>{EXAM_NAME[e]}</button>
           ))}
         </div>
+        </>}
         <div className="font-bold mb-2">年度</div>
         <div className="flex flex-wrap gap-2">
           <button className={sel + (year === 'all' ? on : off)} onClick={() => setYear('all')}>すべて</button>

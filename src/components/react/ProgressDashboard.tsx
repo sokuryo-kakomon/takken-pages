@@ -44,7 +44,7 @@ export default function ProgressDashboard() {
   const yLabel = (y: string) => ys.find((v) => v.id === y)?.short ?? y;
   const link = (x: QuestionIndex) => (
     <li key={x.id} className="py-1.5 text-sm flex gap-3 items-baseline">
-      <a href={x.url} className="font-bold shrink-0 no-underline">{yLabel(x.year)} 第{x.num}問</a>
+      <a href={x.url} className="font-bold shrink-0 no-underline">{yLabel(x.year)} 問{x.num}</a>
       <span className="text-xs text-ink-faint shrink-0">{x.category}</span>
       <span className="text-ink-soft min-w-0 truncate">{x.excerpt}</span>
     </li>

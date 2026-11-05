@@ -1,23 +1,18 @@
 ---
 import App from '../layouts/App.astro';
 import QuestionCard from './react/QuestionCard';
-import BookNote from './BookNote.astro';
 import { byId, site, SITE_NAME, EXAMS } from '../lib/data';
 import type { Question } from '../lib/types';
 
-// 1問のページ。測量士は /r07/q1/、測量士補は /hoshi/r07/q1/
+// 1問のページ /r07/q1/。問題文は RETIO 公表の原文のまま、出典をページごとに出す
 interface Props { q: Question }
 const { q } = Astro.props;
 const ex = EXAMS[q.exam ?? 'shi'];
 const prev = q.prev ? byId.get(q.prev)! : null;
 const next = q.next ? byId.get(q.next)! : null;
 const yearUrl = `${ex.base}/${q.year}/`;
-const title = ex.id === 'shi'
-  ? `測量士 ${q.yearLabel.replace(/度$/, '')} 午前 第${q.num}問（${q.category}）｜${SITE_NAME}`
-  : `測量士補 ${q.yearLabel.replace(/度$/, '')} 第${q.num}問（${q.category}）｜${SITE_NAME}`;
-const crumbs = ex.id === 'shi'
-  ? [['トップ', '/'], [q.yearLabel, yearUrl]]
-  : [['トップ', '/'], ['測量士補', '/hoshi/'], [q.yearLabel, yearUrl]];
+const title = `宅建 ${q.yearLabel.replace(/年度/, '年')} 問${q.num}（${q.category}）｜${SITE_NAME}`;
+const crumbs = [['トップ', '/'], [q.yearLabel, yearUrl]];
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
@@ -27,27 +22,25 @@ const jsonLd = {
   isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: site.url + '/' },
   breadcrumb: {
     '@type': 'BreadcrumbList',
-    itemListElement: [...crumbs, [`第${q.num}問`, q.url]].map(([name, u], i) => ({ '@type': 'ListItem', position: i + 1, name, item: site.url + u })),
+    itemListElement: [...crumbs, [`問${q.num}`, q.url]].map(([name, u], i) => ({ '@type': 'ListItem', position: i + 1, name, item: site.url + u })),
   },
 };
-const exq = ex.id === 'shi' ? '' : 'exam=hoshi&';
 ---
 <App title={title} description={q.description} path={q.url} ogType="article" jsonLd={jsonLd}>
-  <nav class="text-sm text-ink-soft mb-2">{crumbs.map(([name, u]) => <><a href={u}>{name}</a> ／ </>)}第{q.num}問</nav>
-  <h1 class="text-xl md:text-2xl mb-4 leading-snug">{q.title}<span class="block text-sm font-sans font-normal text-ink-soft mt-1">解答と解説</span></h1>
+  <nav class="text-sm text-ink-soft mb-2">{crumbs.map(([name, u]) => <><a href={u}>{name}</a> ／ </>)}問{q.num}</nav>
+  <h1 class="text-xl md:text-2xl mb-4 leading-snug">{q.title}<span class="block text-sm font-sans font-normal text-ink-soft mt-1">問題と正解</span></h1>
 
   <QuestionCard client:load q={q} lawRefs={site.lawRefs} />
-  <BookNote q={q} />
+  <p class="text-xs text-ink-faint mt-3 leading-relaxed">
+    出典：一般財団法人 不動産適正取引推進機構 公表の{q.yearLabel}宅地建物取引士資格試験の試験問題（{q.source ? <a href={q.source} target="_blank" rel="noopener">PDF</a> : 'PDF'}）。問題文は原文のまま掲載しています。正解番号も同機構の公表によります。
+  </p>
 
   <nav class="flex justify-between gap-3 mt-6">
-    {prev ? <a class="btn btn-ghost flex-1" data-key="prev" href={prev.url}>← 第{prev.num}問</a> : <span class="btn btn-ghost flex-1 is-disabled">← 前の問題</span>}
+    {prev ? <a class="btn btn-ghost flex-1" data-key="prev" href={prev.url}>← 問{prev.num}</a> : <span class="btn btn-ghost flex-1 is-disabled">← 前の問題</span>}
     <a class="btn btn-ghost" href={yearUrl}>一覧</a>
-    {next ? <a class="btn btn-ghost flex-1" data-key="next" href={next.url}>第{next.num}問 →</a> : <span class="btn btn-ghost flex-1 is-disabled">次の問題 →</span>}
+    {next ? <a class="btn btn-ghost flex-1" data-key="next" href={next.url}>問{next.num} →</a> : <span class="btn btn-ghost flex-1 is-disabled">次の問題 →</span>}
   </nav>
   <div class="mt-4 text-center text-sm">
-    {/* 分野別ガイドは測量士向けしかない */}
-    {ex.id === 'shi' && <><a href={`/guide/${q.categorySlug}/`}>📚 「{q.category}」の分野別ガイドを読む</a>
-    <span class="mx-2 text-ink-faint">｜</span></>}
-    <a href={`/practice/?${exq}cat=${q.categorySlug}`}>この分野を通しで解く</a>
+    <a href={`/practice/?cat=${q.categorySlug}`}>「{q.category}」を通しで解く</a>
   </div>
 </App>

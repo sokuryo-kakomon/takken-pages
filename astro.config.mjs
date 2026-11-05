@@ -9,7 +9,7 @@ import tailwindcss from '@tailwindcss/vite';
 // /data/q/r07-q1.json のような動的エンドポイントを末尾スラッシュ無しでは 404 にしてしまう。
 // 本番（GitHub Pages）はディレクトリへのアクセスを自動でスラッシュ付きに寄せるので困らない。
 export default defineConfig({
-  site: 'https://sokuryo-kakomon.com',
+  site: 'https://takken-kakomon-drill.com',
   build: { format: 'directory' },
   integrations: [react()],
   vite: { plugins: [tailwindcss()] },

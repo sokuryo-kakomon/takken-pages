@@ -19,8 +19,8 @@ const pane = (exam: Exam) => {
     ys: ex.years.filter((y) => ex.questions.some((q) => q.year === y.id)),
     cats: categoriesOf(exam).filter((c) => c.count > 0),
     exq: exam === 'shi' ? '' : '?exam=hoshi',
-    // 分野別ガイドは測量士向けしかないので、測量士補はその分野の演習へ
-    catHref: (slug: string) => (exam === 'shi' ? `/guide/${slug}/` : `/practice/?exam=hoshi&cat=${slug}`),
+    // 分野は演習へ（分野別ガイドはまだ無い）
+    catHref: (slug: string) => `/practice/?${exam === 'shi' ? '' : 'exam=hoshi&'}cat=${slug}`,
   };
 };
 ---
@@ -48,7 +48,7 @@ const pane = (exam: Exam) => {
     <div class="text-xs tracking-widest text-ink-faint px-2 mt-5 mb-1">分野別</div>
     <div class="space-y-0.5">
       {cats.map((c) => (
-        <a href={catHref(c.slug)} class={'sb-link' + (active(`/guide/${c.slug}/`) ? ' is-active' : '')}>
+        <a href={catHref(c.slug)} class={'sb-link' + ''}>
           <span>{c.icon} {c.name}</span><span class="sb-count">{c.count}問</span>
         </a>
       ))}
@@ -56,8 +56,6 @@ const pane = (exam: Exam) => {
 
     <div class="mt-5 space-y-0.5">
       <a href={`/progress/${exq}`} class={'sb-link' + (active('/progress/') ? ' is-active' : '')}>📈 成績表</a>
-      {exam === 'shi' && <a href="/guide/" class={'sb-link' + (path === '/guide/' ? ' is-active' : '')}>📚 分野別ガイド一覧</a>}
-      <a href="/books/" class={'sb-link' + (path === '/books/' ? ' is-active' : '')}>📖 おすすめ参考書</a>
     </div>
   </div>
   ); })}

@@ -1,7 +1,6 @@
 import { persistentAtom } from '@nanostores/persistent';
 
-// 学習記録。旧サイトと同じ localStorage キー・同じ記録形式なので、
-// 作り替え前に解いた分の進捗はそのまま引き継がれる。
+// 学習記録（localStorage）。記録の形は測量士サイトと同じ。キーは宅建用に分けてある。
 //
 // 将来ユーザー認証を入れてクラウド同期する場合は、この store を唯一の書き口として
 // onProgressChange() で変更を拾い、ログイン中なら送信する形にする。
@@ -24,16 +23,17 @@ const codec = {
   decode: (s: string) => { try { return JSON.parse(s); } catch { return undefined; } },
 };
 
-export const $progress = persistentAtom<Progress>('sokuryo_q_v2', {}, codec);
-export const $bookmarks = persistentAtom<string[]>('sokuryo_bm_v1', [], codec);
+export const $progress = persistentAtom<Progress>('takken_q_v1', {}, codec);
+export const $bookmarks = persistentAtom<string[]>('takken_bm_v1', [], codec);
 // 解いた日（YYYY-MM-DD）の記録。Rec.at は問題ごとに最後の1回しか残らないので、連続日数はこちらで数える
-export const $days = persistentAtom<string[]>('sokuryo_days_v1', [], codec);
+export const $days = persistentAtom<string[]>('takken_days_v1', [], codec);
 
 const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-export function recordAnswer(qid: string, userAnswer: number, correctAnswer: number): Rec {
+// accepted: 複数正解・正解なし（全員正解）の問で正解と扱う番号すべて
+export function recordAnswer(qid: string, userAnswer: number, correctAnswer: number, accepted?: number[]): Rec {
   const prev = $progress.get()[qid];
-  const ok = userAnswer === correctAnswer;
+  const ok = accepted ? accepted.includes(userAnswer) : userAnswer === correctAnswer;
   const rec: Rec = {
     answered: true,
     correct: ok,

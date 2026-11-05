@@ -1,9 +1,8 @@
 ---
-import ExamTabs from './ExamTabs.astro';
 import { EXAMS, categoriesOf, yearSpan } from '../lib/data';
 import type { Exam } from '../lib/types';
 
-// 測量士（/）と測量士補（/hoshi/）のトップの1画面目。
+// トップ（/）の1画面目。
 // 見出し・ボタン・年度と分野の札を1画面目に出し、説明（slot）はその下に開いたまま並べる。
 interface Props { exam: Exam; bg: string }
 const { exam, bg } = Astro.props;
@@ -18,14 +17,13 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
   <div class="absolute -right-10 -top-16 text-[22rem] leading-none serif text-paper-deep select-none pointer-events-none" aria-hidden="true">{bg}</div>
   <div class="relative max-w-6xl mx-auto px-4 pt-12 pb-10 md:pt-20 md:pb-14 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
     <div>
-      <ExamTabs exam={exam} />
-      <h1 class="text-4xl md:text-6xl lg:text-5xl xl:text-[3.5rem] leading-tight mb-4"><span class="inline-block">{ex.name}の過去問、</span><br /><span class="inline-block">{span.n}年分・全{ex.questions.length}問。</span></h1>
-      <p class="text-lg text-ink-soft mb-6"><span class="inline-block">{exam === 'shi' ? '午前（択一式）の' : ''}全問に解説。</span><span class="inline-block">登録不要・無料。</span></p>
+      <h1 class="text-4xl md:text-6xl lg:text-5xl xl:text-[3.5rem] leading-tight mb-4"><span class="inline-block">{ex.name}の過去問、</span><br /><span class="inline-block">{span.n}回分・全{ex.questions.length}問。</span></h1>
+      <p class="text-lg text-ink-soft mb-6"><span class="inline-block">問題文は原文のまま、</span><span class="inline-block">1問1ページ。</span><span class="inline-block">登録不要・無料。</span></p>
       <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
         <a href={`/practice/${exam === 'shi' ? '' : '?exam=hoshi'}`} class="btn btn-primary text-lg px-8 py-3">演習を始める</a>
         <a href="#" id="resume" class="text-ink-soft no-underline hover:text-moss" hidden>続きから ›</a>
       </div>
-      <p class="text-sm text-ink-soft mt-4" id="countdown" title="例年の日程（5月第3日曜）からの推定"></p>
+      <p class="text-sm text-ink-soft mt-4" id="countdown" title="例年の日程（10月第3日曜）からの推定"></p>
       <a href="#about" class="lg:hidden inline-block mt-3 text-xs text-ink-soft no-underline">つかい方・解説について ↓</a>
     </div>
 
@@ -53,8 +51,8 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
 </section>
 
 <script define:vars={{ exam, name: ex.full }}>
-  // 試験（例年5月第3日曜）までの日数
-  const third = (y) => { const d = new Date(y, 4, 1); return new Date(y, 4, 1 + ((7 - d.getDay()) % 7) + 14); };
+  // 試験（例年10月第3日曜）までの日数
+  const third = (y) => { const d = new Date(y, 9, 1); return new Date(y, 9, 1 + ((7 - d.getDay()) % 7) + 14); };
   const now = new Date(); now.setHours(0, 0, 0, 0);
   let day = third(now.getFullYear());
   if (day < now) day = third(now.getFullYear() + 1);
@@ -64,8 +62,8 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
   // 連続日数（store/progress.ts の streak と同じ数え方。2日以上のときだけ出す）
   try {
     const key = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const set = new Set(JSON.parse(localStorage.getItem('sokuryo_days_v1') || '[]'));
-    for (const r of Object.values(JSON.parse(localStorage.getItem('sokuryo_q_v2') || '{}'))) if (r && r.at) set.add(key(new Date(r.at)));
+    const set = new Set(JSON.parse(localStorage.getItem('takken_days_v1') || '[]'));
+    for (const r of Object.values(JSON.parse(localStorage.getItem('takken_q_v1') || '{}'))) if (r && r.at) set.add(key(new Date(r.at)));
     const d = new Date();
     if (!set.has(key(d))) d.setDate(d.getDate() - 1);
     let n = 0;
@@ -76,20 +74,20 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
 
   // 続きから: この試験で最後に解いた問題の次へ（記録が無ければ出さない）
   try {
-    const prog = JSON.parse(localStorage.getItem('sokuryo_q_v2') || '{}');
+    const prog = JSON.parse(localStorage.getItem('takken_q_v1') || '{}');
     let last = null, at = -1;
     for (const [id, r] of Object.entries(prog)) {
       if (id.startsWith('h-') !== (exam === 'hoshi') || !r || !r.answered) continue;
       if ((r.at || 0) > at) { at = r.at || 0; last = id; }
     }
-    const m = last && last.match(/^(?:h-)?([rh]\d{2})-q(\d+)$/);
+    const m = last && last.match(/^(?:h-)?([rh]\d{2}(?:-\d{2})?)-q(\d+)$/);
     if (m) {
       const base = exam === 'hoshi' ? '/hoshi' : '';
       const n = Number(m[2]);
       const a = document.getElementById('resume');
-      const yr = m[1].toUpperCase().replace(/^([RH])0?/, '$1');
-      a.href = n < 28 ? `${base}/${m[1]}/q${n + 1}/` : `${base}/${m[1]}/`;
-      a.textContent = n < 28 ? `続きから ${yr} 問${n + 1} ›` : `続きから ${yr} ›`;
+      const yr = m[1].toUpperCase().replace(/^([RH])0?/, '$1').replace('-', '.');
+      a.href = n < 50 ? `${base}/${m[1]}/q${n + 1}/` : `${base}/${m[1]}/`;
+      a.textContent = n < 50 ? `続きから ${yr} 問${n + 1} ›` : `続きから ${yr} ›`;
       a.hidden = false;
     }
   } catch (e) { /* 記録が読めなければ出さない */ }

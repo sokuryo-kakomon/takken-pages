@@ -52,14 +52,14 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
   }, []);
-  // PC のキー操作: 1〜5（記号が a〜e の問題は a〜e も）で解答、Enter・→ で次の問題、← で前の問題（data-key の付いたボタンを押す）
+  // PC のキー操作: 1〜4 で解答、Enter・→ で次の問題、← で前の問題（data-key の付いたボタンを押す）
   const pickRef = useRef<(key: string) => void>(() => {});
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing || law || zoom) return;
       const t = document.activeElement;
       if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
-      if (/^[1-5a-e]$/.test(e.key)) { pickRef.current(e.key); return; }
+      if (/^[1-4]$/.test(e.key)) { pickRef.current(e.key); return; }
       const dir = e.key === 'ArrowRight' || e.key === 'Enter' ? 'next' : e.key === 'ArrowLeft' ? 'prev' : null;
       // Enter は押しているボタンの上ではそのボタンに任せる
       if (!dir || (e.key === 'Enter' && t && /^(A|BUTTON|SUMMARY)$/.test(t.tagName))) return;
@@ -71,13 +71,16 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
   }, [law, zoom]);
 
   const answered = picked !== null;
-  const ok = answered && picked === q.answer;
+  // 複数正解・正解なし（全員正解）の問は q.ok に正解と扱う番号がすべて入っている
+  const accepted = q.ok ?? [q.answer];
+  const isOk = (v: number) => accepted.includes(v);
+  const ok = answered && isOk(picked);
   const pick = (v: number) => {
     if (answered) return;
     setPicked(v);
     setRevealed(true);
-    const rec = recordAnswer(q.id, v, q.answer);
-    onAnswered?.(v === q.answer, rec);
+    const rec = recordAnswer(q.id, v, q.answer, accepted);
+    onAnswered?.(isOk(v), rec);
   };
   pickRef.current = (key: string) => {
     const c = q.choices.find((c) => c.key === key) ?? (/\d/.test(key) ? q.choices.find((c) => c.value === Number(key)) : undefined);
@@ -85,9 +88,11 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
     else if (q.choiceStyle === 'none' && /\d/.test(key)) pick(Number(key));
   };
   const cls = (v: number, extra = '') =>
-    'choice' + extra + (answered ? (v === q.answer ? ' is-correct' : v === picked ? ' is-wrong' : ' is-muted') : '');
-  const markText = (v: number) => (answered && (v === q.answer || v === picked) ? (v === q.answer ? '○' : '×') : '');
+    'choice' + extra + (answered ? (isOk(v) ? ' is-correct' : v === picked ? ' is-wrong' : ' is-muted') : '');
+  const markText = (v: number) => (answered && (isOk(v) || v === picked) ? (isOk(v) ? '○' : '×') : '');
   const answerLabel = (() => {
+    if (accepted.length >= 4) return 'なし（全員正解）';
+    if (accepted.length > 1) return `選択肢 ${accepted.join(' 又は ')}`;
     const c = q.choices.find((c) => c.value === q.answer);
     if (!c) return `選択肢 ${q.answer}`;
     return q.choiceStyle === 'combo' ? `${c.key}（${c.text}）` : `選択肢 ${c.key}`;
@@ -98,7 +103,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
     <article className="card p-5 md:p-7">
       {mode === 'page' && (
         <header className="flex flex-wrap items-center gap-2 mb-3 text-sm">
-          <span className="font-bold">{q.yearLabel} 第{q.num}問</span>
+          <span className="font-bold">{q.yearLabel} 問{q.num}</span>
           <span className="chip" style={catStyle}>{q.categoryIcon} {q.category}</span>
           {prev?.answered && (
             <span className="text-xs text-ink-faint">前回：{prev.correct ? '正解' : '不正解'}（{prev.attempts}回目）</span>
@@ -114,7 +119,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
         {q.tablesHtml.map((t, i) => <div key={i} dangerouslySetInnerHTML={{ __html: t }} />)}
         {q.figure?.essential && (
           <figure className="my-3">
-            <img src={q.figure.src} alt={`第${q.num}問の図表`} loading="lazy"
+            <img src={q.figure.src} alt={`問${q.num}の図表`} loading="lazy"
               className="max-w-full h-auto border border-line rounded-dojo bg-white cursor-zoom-in" onClick={() => setZoom(q.figure!.src)} />
             <figcaption className="text-xs text-ink-faint mt-1">図表をクリックすると拡大します</figcaption>
           </figure>
@@ -131,7 +136,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
       </div>
 
       <div className="mt-4">
-        <div className="text-sm font-bold text-moss-deep mb-1">👇 解答を選ぶ<span className="hidden md:inline font-normal text-xs text-ink-faint ml-2">キー 1〜5 で選択・Enter で次へ</span></div>
+        <div className="text-sm font-bold text-moss-deep mb-1">👇 解答を選ぶ<span className="hidden md:inline font-normal text-xs text-ink-faint ml-2">キー 1〜4 で選択・Enter で次へ</span></div>
         {q.choiceStyle === 'sentence' && q.choices.map((c) => (
           <button key={c.key} type="button" className={cls(c.value)} disabled={answered} onClick={() => pick(c.value)}>
             <span className="mark">{markText(c.value)}</span>
@@ -150,7 +155,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
         )}
         {q.choiceStyle === 'none' && (
           <div className="flex flex-wrap gap-2">
-            {[1, 2, 3, 4, 5].map((v) => (
+            {[1, 2, 3, 4].map((v) => (
               <button key={v} type="button" className={cls(v, ' choice-num')} disabled={answered} onClick={() => pick(v)}>{v}</button>
             ))}
           </div>
@@ -166,7 +171,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
       {q.figure && !q.figure.essential && (
         <details className="mt-4 text-sm">
           <summary className="cursor-pointer text-ink-soft">📄 原典の問題ページ（画像）を見る</summary>
-          <img src={q.figure.src} alt={`${q.yearLabel} 第${q.num}問 原典`} loading="lazy"
+          <img src={q.figure.src} alt={`${q.yearLabel} 問${q.num} 原典`} loading="lazy"
             className="mt-2 max-w-full h-auto border border-line rounded-dojo bg-white cursor-zoom-in" onClick={() => setZoom(q.figure!.src)} />
         </details>
       )}

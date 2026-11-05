@@ -1,4 +1,4 @@
-// scripts/extract_data.py が出力する JSON の型。
+// tools/site_data.py が出力する JSON の型。
 // 問題文と解説は HTML のまま持つ（表・SVG・強調が多く、平文化すると失われる）。
 // *Text は AI へ渡す用・検索用の平文。
 
@@ -9,13 +9,15 @@ export interface Figure { src: string; essential: boolean }
 export type Exam = 'shi' | 'hoshi';
 
 export interface Question {
-  id: string;            // "r07-q1"（測量士補は "h-r07-q1"）
-  exam?: Exam;           // 無ければ測量士（questions.json は持たず、読み込み時に付ける）
+  id: string;            // "r07-q1"・"r03-12-q1"（令和2・3年度は10月と12月の2回）
+  exam?: Exam;           // 'shi' だけ（測量士サイトから写した名残。questions.json は持たず、読み込み時に付ける）
   year: string;          // "r07"
   yearNum: number;
   yearLabel: string;     // "令和7年度"
   num: number;
-  answer: number;        // 1〜5
+  answer: number;        // 1〜4
+  ok?: number[];         // 正解と扱う番号すべて（複数正解・正解なしの問。無ければ [answer]）
+  source?: string;       // 原文の PDF
   category: string;
   categoryIcon: string;
   categorySlug: string;
@@ -25,7 +27,7 @@ export interface Question {
   statementHtml: string;
   statementText: string;
   items: Item[];         // 判断材料の記述 a〜e（押せない）
-  choices: Choice[];     // 解答肢（押せる）。空なら 1〜5 の番号ボタンで答える
+  choices: Choice[];     // 解答肢（押せる）。空なら 1〜4 の番号ボタンで答える
   choiceStyle: 'sentence' | 'combo' | 'none';
   tablesHtml: string[];
   figure: Figure | null; // essential=true は問題に必須の図、false は原典ページの控え
