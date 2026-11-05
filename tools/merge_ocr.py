@@ -331,11 +331,15 @@ def main():
                 ask.append((y, q, name, u, '（行の尻で2回とも落ちた）', '', user[max(0, s - 12):s] + '［' + u + '］' + user[e:e + 12], xs[0][3]))
                 continue
             r1, r2 = (u if a and len(u) == 1 else x for x, a in zip((r1, r2), at))
+            # 読みの中のごみの点は先に除く（h28 問43 は「宅地建物取引業者Ａ」が2回とも「.A」と読まれ、「.」に置き換わっていた）
+            # 数字の隣は除かない（「3,000」が「3.000」と読まれた所）
+            if '.' not in u and not re.search(r'\d', user[s - 1:s] + u + user[e:e + 1]):
+                r1, r2 = (x.replace('.', '') if x and not re.search(r'\d', x) else x for x in (r1, r2))
             # 紙のごみの点を「.」に読む（h27 問2「Dに」→「D.に」）。数字の間（7.5%）は読みのとおり
             if u == '' and '.' in (r1, r2) and not (user[s - 1:s].isdigit() and user[e:e + 1].isdigit()):
                 stats['本人のまま'] += 1
                 continue
-            if u and r1 in (u, None) and r2 in (u, None) and u in (r1, r2):
+            if r1 in (u, None) and r2 in (u, None) and u in (r1, r2):  # 点を除くと本人と同じになった所（u が空）も
                 stats['本人のまま'] += 1
                 continue
             # 数字の隣に数字を足す直しは、OCR の「800→8開」の片割れ（r03-10 問16 が 8800 に）か本当の違いか決まらない→目で見る
