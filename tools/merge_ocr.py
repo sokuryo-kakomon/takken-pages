@@ -250,7 +250,8 @@ def main():
                                               (is_key and r1 is not None and r1[:1] == u[:1]))
             one = r1 if r2 is None else r2 if r1 is None else None  # 片方だけ読めた
             slip = r1 is not None and r1 == r2 and ocr_slip(u, r1)
-            if slip or (one is not None and ocr_slip(u, one)):
+            if slip or (one is not None and ocr_slip(u, one)) or \
+                    (r1 is not None and r2 is not None and ocr_slip(u, r1) and ocr_slip(u, r2)):
                 stats['本人のまま'] += 1
             elif one is not None and inside and safe_fix(u, one):
                 decided.setdefault((y, seg[0], seg[1]), []).append((s - seg[2], e - seg[2], one))
