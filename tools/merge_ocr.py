@@ -324,6 +324,12 @@ def main():
                 q, name = (seg[0], seg[1]) if seg else ('?', '?')
                 ask.append((y, q, name, u, '（行の尻で落ちたか）', '', user[max(0, s - 12):s] + '［' + u + '］' + user[e:e + 12], xs[0][3]))
                 continue
+            # 2回とも同じ1字を落とした継ぎ目は、落ちたのかサイトの書き足しか決まらない→目で見る（h30 問20「宅地造成［等］に伴う」が書き足しだった）
+            if all(at) and len(u) == 1 and u not in '。':
+                stats['確認'] += 1
+                q, name = (seg[0], seg[1]) if seg else ('?', '?')
+                ask.append((y, q, name, u, '（行の尻で2回とも落ちた）', '', user[max(0, s - 12):s] + '［' + u + '］' + user[e:e + 12], xs[0][3]))
+                continue
             r1, r2 = (u if a and len(u) == 1 else x for x, a in zip((r1, r2), at))
             # 紙のごみの点を「.」に読む（h27 問2「Dに」→「D.に」）。数字の間（7.5%）は読みのとおり
             if u == '' and '.' in (r1, r2) and not (user[s - 1:s].isdigit() and user[e:e + 1].isdigit()):
