@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import TopHome from '../../components/TopHome.astro';
+import { SITE_NAME, hoshiQuestions, shiQuestions, site, yearSpan } from '../../lib/data';
+
+// 測量士補のトップ。使い方・記録の仕組みは測量士と同じ
+const total = hoshiQuestions.length;
+const span = yearSpan('hoshi');
+const title = `測量士補 過去問 ${span.short} 全問解説｜${SITE_NAME}`;
+const description = `測量士補試験の過去問 ${span.long} 全${total}問を、途中の考え方まで書いた解説つきで演習できます。解答を選ぶと即判定、年度別・分野別の成績を自動記録。登録不要・無料。`;
+const features = [
+  { t: '「なぜ」まで書く解説', d: '公式に配布されるのは問題と正解番号だけ。誤りの選択肢も一つずつ、どこが・なぜ誤りかを示します。' },
+  { t: '計算は途中式を省かない', d: '関数電卓を使わず、問題に付く関数表と四則演算・√だけで解ける手順で書きます。' },
+  { t: '成績は端末に自動保存', d: '年度別・分野別の正答率、間違えた問題を成績表にまとめます。登録不要です。' },
+  { t: '合格したら測量士へ', d: `同じサイトで測量士（午前）の過去問 ${shiQuestions.length}問も解けます。記録もそのまま続きます。` },
+];
+const jsonLd = {
+  '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, url: site.url + '/hoshi/', description, inLanguage: 'ja',
+};
+---
+<Base title={title} description={description} path="/hoshi/" jsonLd={jsonLd}>
+  <TopHome exam="hoshi" bg="補">
+    <section>
+      <h2 class="text-2xl mb-4">このサイトの特長</h2>
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {features.map((f) => (
+          <div class="card p-5">
+            <h3 class="text-base mb-2 leading-snug">{f.t}</h3>
+            <p class="text-sm text-ink-soft leading-relaxed">{f.d}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  </TopHome>
+</Base>

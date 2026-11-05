@@ -1,0 +1,64 @@
+---
+import { EXAMS, categoriesOf, examOfPath } from '../lib/data';
+import type { Exam } from '../lib/types';
+import ProgressBar from './react/ProgressBar';
+const path = Astro.url.pathname;
+// /hoshi/ 以下は測量士補、それ以外は測量士の年度・分野を出す。
+// 演習・成績表などの両方で使うページは両方作っておき、?exam=hoshi で切り替える（Base.astro の頭の script と global.css）
+const SHARED = ['/practice/', '/progress/', '/mogi/', '/ox/'];
+const shared = SHARED.some((p) => path.startsWith(p));
+const exams: Exam[] = shared ? ['shi', 'hoshi'] : [examOfPath(path)];
+const hasHoshi = EXAMS.hoshi.questions.length > 0;
+const active = (h: string) => path === h || (h !== '/' && path.startsWith(h));
+const on = 'bg-card text-ink font-bold shadow-sm';
+const pane = (exam: Exam) => {
+  const ex = EXAMS[exam];
+  return {
+    ex,
+    ids: ex.questions.map((q) => q.id),
+    ys: ex.years.filter((y) => ex.questions.some((q) => q.year === y.id)),
+    cats: categoriesOf(exam).filter((c) => c.count > 0),
+    exq: exam === 'shi' ? '' : '?exam=hoshi',
+    // 分野別ガイドは測量士向けしかないので、測量士補はその分野の演習へ
+    catHref: (slug: string) => (exam === 'shi' ? `/guide/${slug}/` : `/practice/?exam=hoshi&cat=${slug}`),
+  };
+};
+---
+<aside class="sidebar bg-paper lg:bg-transparent w-72 shrink-0 p-4 lg:p-0 lg:sticky lg:top-20">
+  {exams.map((exam) => { const { ex, ids, ys, cats, exq, catHref } = pane(exam); return (
+  <div class={shared ? `ex-${exam}` : ''}>
+    {hasHoshi && (
+      <div class="grid grid-cols-2 gap-1 p-1 mb-4 rounded-dojo bg-paper-deep text-sm">
+        <a href={shared ? path : '/'} class={'text-center py-1.5 rounded-dojo no-underline ' + (exam === 'shi' ? on : 'text-ink-soft')}>測量士</a>
+        <a href={shared ? `${path}?exam=hoshi` : '/hoshi/'} class={'text-center py-1.5 rounded-dojo no-underline ' + (exam === 'hoshi' ? on : 'text-ink-soft')}>測量士補</a>
+      </div>
+    )}
+    <div class="card p-4 mb-4"><ProgressBar client:load ids={ids} label={`${ex.name}の進捗`} compact /></div>
+    <a href={`/practice/${exq}`} class="btn btn-primary w-full mb-5">演習を始める</a>
+
+    <div class="text-xs tracking-widest text-ink-faint px-2 mb-1">年度別</div>
+    <div class="space-y-0.5">
+      {ys.map((y) => (
+        <a href={`${ex.base}/${y.id}/`} class={'sb-link' + (active(`${ex.base}/${y.id}/`) ? ' is-active' : '')}>
+          <span>{y.label}</span><span class="sb-count">{y.count}問</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="text-xs tracking-widest text-ink-faint px-2 mt-5 mb-1">分野別</div>
+    <div class="space-y-0.5">
+      {cats.map((c) => (
+        <a href={catHref(c.slug)} class={'sb-link' + (active(`/guide/${c.slug}/`) ? ' is-active' : '')}>
+          <span>{c.icon} {c.name}</span><span class="sb-count">{c.count}問</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="mt-5 space-y-0.5">
+      <a href={`/progress/${exq}`} class={'sb-link' + (active('/progress/') ? ' is-active' : '')}>📈 成績表</a>
+      {exam === 'shi' && <a href="/guide/" class={'sb-link' + (path === '/guide/' ? ' is-active' : '')}>📚 分野別ガイド一覧</a>}
+      <a href="/books/" class={'sb-link' + (path === '/books/' ? ' is-active' : '')}>📖 おすすめ参考書</a>
+    </div>
+  </div>
+  ); })}
+</aside>

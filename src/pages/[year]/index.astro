@@ -1,0 +1,10 @@
+---
+import YearPage from '../../components/YearPage.astro';
+import { EXAMS } from '../../lib/data';
+
+export function getStaticPaths() {
+  return EXAMS.shi.years.map((y) => ({ params: { year: y.id }, props: { y } }));
+}
+const { y } = Astro.props;
+---
+<YearPage exam="shi" y={y} />

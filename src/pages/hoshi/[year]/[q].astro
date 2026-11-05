@@ -1,0 +1,11 @@
+---
+import QuestionPage from '../../../components/QuestionPage.astro';
+import { hoshiQuestions } from '../../../lib/data';
+
+// 測量士補は /hoshi/r07/q1/
+export function getStaticPaths() {
+  return hoshiQuestions.map((q) => ({ params: { year: q.year, q: 'q' + q.num }, props: { q } }));
+}
+const { q } = Astro.props;
+---
+<QuestionPage q={q} />

@@ -1,0 +1,12 @@
+---
+import YearPage from '../../../components/YearPage.astro';
+import { EXAMS } from '../../../lib/data';
+
+export function getStaticPaths() {
+  // 問題がまだ入っていない年度のページは作らない
+  return EXAMS.hoshi.years.filter((y) => EXAMS.hoshi.questions.some((q) => q.year === y.id))
+    .map((y) => ({ params: { year: y.id }, props: { y } }));
+}
+const { y } = Astro.props;
+---
+<YearPage exam="hoshi" y={y} />

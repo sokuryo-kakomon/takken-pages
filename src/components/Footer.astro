@@ -1,0 +1,23 @@
+---
+import { SITE_NAME, site } from '../lib/data';
+const year = new Date().getFullYear();
+---
+<footer class="mt-16 border-t border-line bg-paper-deep/60">
+  <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-ink-soft">
+    <div class="flex flex-wrap gap-x-6 gap-y-2 mb-4">
+      <a href="/" class="no-underline hover:underline">トップ</a>
+      <a href="/practice/" class="no-underline hover:underline">演習</a>
+      <a href="/guide/" class="no-underline hover:underline">分野別ガイド</a>
+      <a href="/progress/" class="no-underline hover:underline">成績表</a>
+      <a href="/books/" class="no-underline hover:underline">おすすめ参考書</a>
+      <a href="/about/" class="no-underline hover:underline">運営者情報・お問い合わせ</a>
+      <a href="/privacy/" class="no-underline hover:underline">プライバシーポリシー</a>
+    </div>
+    <p class="text-xs leading-relaxed">
+      出典：<a href={site.source.url} target="_blank" rel="noopener">{site.source.name}</a>を加工して掲載（政府標準利用規約準拠）。
+      当サイトは国土地理院および試験運営団体とは関係のない、個人運営の非公式な学習支援サイトです。試験に関する公式な情報は必ず国土地理院の発表をご確認ください。
+      当サイトは Amazon.co.jp を宣伝しリンクすることによって紹介料を得られる、Amazon アソシエイト・プログラムの参加者です。
+    </p>
+    <p class="text-xs mt-3">&copy; {year} {SITE_NAME}</p>
+  </div>
+</footer>

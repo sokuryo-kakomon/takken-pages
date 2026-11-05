@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import { pageTitle } from '../lib/data';
+---
+<Base title={pageTitle('ページが見つかりません')} description="お探しのページは見つかりませんでした。" path="/404/" noindex>
+  <main class="max-w-3xl mx-auto px-4 py-20 text-center">
+    <div class="serif text-6xl text-ink-faint mb-3">404</div>
+    <h1 class="text-2xl mb-3">ページが見つかりません</h1>
+    <p class="text-ink-soft mb-6">URL が変わったか、削除された可能性があります。</p>
+    <div class="flex justify-center gap-3">
+      <a href="/" class="btn btn-primary">トップへ</a>
+      <a href="/practice/" class="btn btn-ghost">演習を始める</a>
+    </div>
+  </main>
+</Base>

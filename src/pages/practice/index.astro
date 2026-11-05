@@ -1,0 +1,14 @@
+---
+import App from '../../layouts/App.astro';
+import PracticeApp from '../../components/react/PracticeApp';
+import { pageTitle, shiQuestions, hoshiQuestions } from '../../lib/data';
+
+const title = pageTitle('演習｜年度別・分野別に過去問を解く');
+const description = `測量士試験 午前の過去問${shiQuestions.length}問${hoshiQuestions.length ? `・測量士補試験の過去問${hoshiQuestions.length}問` : ''}を、年度・分野・未回答・要復習で絞って通しで演習。解答を選ぶとその場で正誤と解説が出て、成績は自動で記録されます。`;
+---
+<App title={title} description={description} path="/practice/">
+  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 演習</nav>
+  <h1 class="text-2xl mb-4">演習</h1>
+  <PracticeApp client:only="react" />
+  <noscript><p class="card p-5">演習には JavaScript が必要です。各問題のページ（<a href="/r07/">年度別一覧</a>）からは JavaScript なしでも問題と解説を読めます。</p></noscript>
+</App>

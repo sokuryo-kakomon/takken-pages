@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import { pages, pageTitle } from '../lib/data';
+const p = pages.privacy;
+---
+<Base title={pageTitle(p.title)} description="当サイトにおける個人情報・学習記録（ローカルストレージ）・広告配信・アフィリエイト・アクセス解析の取り扱いについて。" path="/privacy/">
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ {p.title}</nav>
+    <h1 class="text-2xl mb-4">{p.title}</h1>
+    <article class="card p-6 md:p-8 qhtml" set:html={p.html} />
+    {p.updated && <p class="text-xs text-ink-faint mt-3 text-right">{p.updated}</p>}
+  </main>
+</Base>

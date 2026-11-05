@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import books from '../data/books.json';
+import { pageTitle, site } from '../lib/data';
+
+// おすすめ参考書・問題集（Amazon アソシエイト）。過去問道場の「おすすめ参考書」ページにならい、本の紹介は問題ページではなくここにまとめる。
+const href = (asin: string) => `https://www.amazon.co.jp/dp/${asin}/?tag=${site.amazonTag}`;
+const item = (k: string) => books.items[k as keyof typeof books.items];
+const groups = [
+  { h: '測量士', note: '午前（択一式）はこのサイトの過去問で。基礎の確認と午後（記述式）は本で。', keys: books.page.shi },
+  { h: '測量士補', note: '1冊で基礎と問題演習まで済ませたい人に。', keys: books.page.hoshi },
+  { h: '電卓', note: '試験会場では電卓が貸与されます。同じ機種で操作に慣れておくと本番で迷いません。', keys: books.page.both },
+];
+---
+<Base title={pageTitle('おすすめ参考書・問題集')} description="測量士・測量士補試験の独学で使われている定番の参考書・問題集と、試験会場で貸与される電卓と同じ機種。" path="/books/">
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ おすすめ参考書・問題集</nav>
+    <h1 class="text-2xl mb-2">おすすめ参考書・問題集</h1>
+    <p class="text-sm text-ink-soft mb-6">独学で使われている定番だけを選んでいます。<span class="text-ink-faint">（PR：リンク先は Amazon です）</span></p>
+    <div class="space-y-8">
+      {groups.map((g) => (
+        <section>
+          <h2 class="text-lg mb-1">{g.h}</h2>
+          <p class="text-sm text-ink-soft mb-3">{g.note}</p>
+          <div class="space-y-2">
+            {g.keys.map((k) => { const b = item(k); return (
+              <a href={href(b.asin)} target="_blank" rel="sponsored noopener" class="card block p-4 no-underline text-ink hover:border-moss">
+                <div class="flex flex-wrap items-baseline gap-x-3"><b>{b.title}</b><span class="text-xs text-ink-soft">{b.by}</span><span class="ml-auto text-xs text-moss">Amazon で見る ›</span></div>
+                <p class="text-sm text-ink-soft mt-1">{b.desc}</p>
+              </a>
+            ); })}
+          </div>
+        </section>
+      ))}
+    </div>
+    <p class="text-xs text-ink-faint mt-8 leading-relaxed">当サイトは Amazon.co.jp を宣伝しリンクすることによって紹介料を得られる、Amazon アソシエイト・プログラムの参加者です。</p>
+  </main>
+</Base>

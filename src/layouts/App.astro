@@ -1,0 +1,28 @@
+---
+// サイドバー付きのレイアウト。問題ページ・ガイド・演習・成績表で使う。
+import Base from './Base.astro';
+import Sidebar from '../components/Sidebar.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  ogType?: string;
+  jsonLd?: unknown;
+  noindex?: boolean;
+}
+const props = Astro.props;
+---
+<Base {...props} withSidebar>
+  <div class="sb-backdrop" id="sb-backdrop"></div>
+  <div class="max-w-6xl mx-auto px-4 py-6 lg:flex lg:gap-8 lg:items-start">
+    <Sidebar />
+    <main class="flex-1 min-w-0">
+      <slot />
+    </main>
+  </div>
+  <script>
+    document.getElementById('sb-toggle')?.addEventListener('click', () => document.body.classList.toggle('sb-open'));
+    document.getElementById('sb-backdrop')?.addEventListener('click', () => document.body.classList.remove('sb-open'));
+  </script>
+</Base>

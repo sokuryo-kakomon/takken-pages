@@ -1,0 +1,28 @@
+---
+import books from '../data/books.json';
+import { site } from '../lib/data';
+import type { Question } from '../lib/types';
+
+// 問題ページの解説の後に置く本の案内（Amazon アソシエイト）。
+// 試験ごとの本を1冊、計算問題（解説に途中式がある問題）だけ電卓を1行足す。1ページ2つまで。
+interface Props { q: Question }
+const { q } = Astro.props;
+const exam = q.exam ?? 'shi';
+const main = books.items[books.main[exam] as keyof typeof books.items];
+const calc = q.explanationHtml.includes('class="step"') ? books.items.calc : null;
+const href = (asin: string) => `https://www.amazon.co.jp/dp/${asin}/?tag=${site.amazonTag}`;
+const row = 'flex flex-wrap items-baseline gap-x-3 gap-y-0.5 no-underline text-ink hover:text-moss';
+---
+<aside class="mt-6 rounded-dojo border border-line bg-card px-4 py-3 text-sm space-y-2.5">
+  <a href={href(main.asin)} target="_blank" rel="sponsored noopener" class={row}>
+    <span class="w-full text-[.7rem] text-ink-faint tracking-wider">PR ・ 「{q.category}」を本で固めるなら</span>
+    <b>{main.title}</b><span class="text-xs text-ink-soft">{main.by}</span><span class="ml-auto text-moss text-xs">Amazon で見る ›</span>
+  </a>
+  {calc && (
+    <a href={href(calc.asin)} target="_blank" rel="sponsored noopener" class={row + ' border-t border-line pt-2.5'}>
+      <span class="w-full text-[.7rem] text-ink-faint tracking-wider">PR ・ 計算は本番と同じ電卓で慣らす</span>
+      <b>{calc.title}</b><span class="ml-auto text-moss text-xs">Amazon で見る ›</span>
+    </a>
+  )}
+  <a href="/books/" class="block text-xs text-ink-soft">ほかの参考書・問題集 ›</a>
+</aside>

@@ -1,0 +1,96 @@
+---
+import ExamTabs from './ExamTabs.astro';
+import { EXAMS, categoriesOf, yearSpan } from '../lib/data';
+import type { Exam } from '../lib/types';
+
+// 測量士（/）と測量士補（/hoshi/）のトップの1画面目。
+// 見出し・ボタン・年度と分野の札を1画面目に出し、説明（slot）はその下に開いたまま並べる。
+interface Props { exam: Exam; bg: string }
+const { exam, bg } = Astro.props;
+const ex = EXAMS[exam];
+const span = yearSpan(exam);
+const ys = ex.years.filter((y) => ex.questions.some((q) => q.year === y.id));
+const cats = categoriesOf(exam).filter((c) => c.count > 0);
+const exq = exam === 'shi' ? '' : 'exam=hoshi&';
+const tile = 'border border-line rounded-dojo text-ink no-underline hover:border-moss hover:text-moss';
+---
+<section class="relative overflow-hidden">
+  <div class="absolute -right-10 -top-16 text-[22rem] leading-none serif text-paper-deep select-none pointer-events-none" aria-hidden="true">{bg}</div>
+  <div class="relative max-w-6xl mx-auto px-4 pt-12 pb-10 md:pt-20 md:pb-14 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+    <div>
+      <ExamTabs exam={exam} />
+      <h1 class="text-4xl md:text-6xl lg:text-5xl xl:text-[3.5rem] leading-tight mb-4"><span class="inline-block">{ex.name}の過去問、</span><br /><span class="inline-block">{span.n}年分・全{ex.questions.length}問。</span></h1>
+      <p class="text-lg text-ink-soft mb-6"><span class="inline-block">{exam === 'shi' ? '午前（択一式）の' : ''}全問に解説。</span><span class="inline-block">登録不要・無料。</span></p>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <a href={`/practice/${exam === 'shi' ? '' : '?exam=hoshi'}`} class="btn btn-primary text-lg px-8 py-3">演習を始める</a>
+        <a href="#" id="resume" class="text-ink-soft no-underline hover:text-moss" hidden>続きから ›</a>
+      </div>
+      <p class="text-sm text-ink-soft mt-4" id="countdown" title="例年の日程（5月第3日曜）からの推定"></p>
+      <a href="#about" class="lg:hidden inline-block mt-3 text-xs text-ink-soft no-underline">つかい方・解説について ↓</a>
+    </div>
+
+    <!-- 右のカード: ランダム10問・年度・分野（年度が主、分野は小さく） -->
+    <div id="select" class="bg-card border border-line rounded-2xl p-5 md:p-7 shadow-lift scroll-mt-20">
+      <a href={`/practice/?${exq}mode=random&n=10&go=1`} class="flex items-center justify-between rounded-dojo border border-moss px-4 py-3 mb-6 font-bold text-moss-deep no-underline hover:bg-moss-pale">
+        ランダム10問を解く<span class="text-xs font-normal text-ink-soft">全年度から ›</span>
+      </a>
+      <h2 class="text-xs tracking-[0.2em] text-ink-soft font-normal mb-3">年度で解く<span class="tracking-normal ml-2 text-ink-faint">（R＝令和・H＝平成）</span></h2>
+      <div class="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-6">
+        {ys.map((y) => (
+          <a href={`${ex.base}/${y.id}/`} class={tile + ' text-center py-3 serif font-semibold text-lg'} title={y.label}>{y.short}</a>
+        ))}
+      </div>
+      <h2 class="text-xs tracking-[0.2em] text-ink-soft font-normal mb-3">分野で解く</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {cats.map((c) => <a href={`/practice/?${exq}cat=${c.slug}`} class={tile + ' text-center text-sm py-2 px-1'}>{c.name}</a>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="max-w-6xl mx-auto px-4 pb-6 scroll-mt-16">
+  <div class="border-t border-line pt-10 space-y-10"><slot /></div>
+</section>
+
+<script define:vars={{ exam, name: ex.full }}>
+  // 試験（例年5月第3日曜）までの日数
+  const third = (y) => { const d = new Date(y, 4, 1); return new Date(y, 4, 1 + ((7 - d.getDay()) % 7) + 14); };
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  let day = third(now.getFullYear());
+  if (day < now) day = third(now.getFullYear() + 1);
+  const left = Math.round((day.getTime() - now.getTime()) / 86400000);
+  let line = `令和${day.getFullYear() - 2018}年度 ${name}まで あと ${left} 日`;
+
+  // 連続日数（store/progress.ts の streak と同じ数え方。2日以上のときだけ出す）
+  try {
+    const key = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const set = new Set(JSON.parse(localStorage.getItem('sokuryo_days_v1') || '[]'));
+    for (const r of Object.values(JSON.parse(localStorage.getItem('sokuryo_q_v2') || '{}'))) if (r && r.at) set.add(key(new Date(r.at)));
+    const d = new Date();
+    if (!set.has(key(d))) d.setDate(d.getDate() - 1);
+    let n = 0;
+    while (set.has(key(d))) { n++; d.setDate(d.getDate() - 1); }
+    if (n >= 2) line += ` ・ ${n}日連続`;
+  } catch (e) { /* 記録が読めなければ出さない */ }
+  document.getElementById('countdown').textContent = line;
+
+  // 続きから: この試験で最後に解いた問題の次へ（記録が無ければ出さない）
+  try {
+    const prog = JSON.parse(localStorage.getItem('sokuryo_q_v2') || '{}');
+    let last = null, at = -1;
+    for (const [id, r] of Object.entries(prog)) {
+      if (id.startsWith('h-') !== (exam === 'hoshi') || !r || !r.answered) continue;
+      if ((r.at || 0) > at) { at = r.at || 0; last = id; }
+    }
+    const m = last && last.match(/^(?:h-)?([rh]\d{2})-q(\d+)$/);
+    if (m) {
+      const base = exam === 'hoshi' ? '/hoshi' : '';
+      const n = Number(m[2]);
+      const a = document.getElementById('resume');
+      const yr = m[1].toUpperCase().replace(/^([RH])0?/, '$1');
+      a.href = n < 28 ? `${base}/${m[1]}/q${n + 1}/` : `${base}/${m[1]}/`;
+      a.textContent = n < 28 ? `続きから ${yr} 問${n + 1} ›` : `続きから ${yr} ›`;
+      a.hidden = false;
+    }
+  } catch (e) { /* 記録が読めなければ出さない */ }
+</script>

@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_NAME, site } from '../lib/data';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;            // "/r07/q1/" のようなサイト内パス。canonical と OGP に使う
+  ogType?: string;
+  jsonLd?: unknown;
+  noindex?: boolean;
+  withSidebar?: boolean;
+}
+const { title, description, path, ogType = 'website', jsonLd, noindex = false, withSidebar = false } = Astro.props;
+const url = site.url + path;
+---
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={url} />
+  <meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow'} />
+  <meta property="og:type" content={ogType} />
+  <meta property="og:site_name" content={SITE_NAME} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={url} />
+  <meta property="og:locale" content="ja_JP" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="theme-color" content="#f7f2e6" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet" />
+  <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${site.adsenseClient}`} crossorigin="anonymous"></script>
+  {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  {/* 演習・成績表など両方の試験で使うページで、?exam=hoshi なら横と上のメニューを測量士補にする（描く前に決める） */}
+  <script is:inline>if (/[?&]exam=hoshi(&|$)/.test(location.search)) document.documentElement.dataset.exam = 'hoshi';</script>
+  <slot name="head" />
+</head>
+<body class="min-h-screen bg-paper text-ink font-sans">
+  <Header withSidebar={withSidebar} />
+  <slot />
+  <Footer />
+</body>
+</html>

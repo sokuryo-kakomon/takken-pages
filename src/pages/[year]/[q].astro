@@ -1,0 +1,11 @@
+---
+import QuestionPage from '../../components/QuestionPage.astro';
+import { shiQuestions } from '../../lib/data';
+
+// 旧サイトと同じ /r07/q1/ という URL に 1 問ずつ静的生成する
+export function getStaticPaths() {
+  return shiQuestions.map((q) => ({ params: { year: q.year, q: 'q' + q.num }, props: { q } }));
+}
+const { q } = Astro.props;
+---
+<QuestionPage q={q} />

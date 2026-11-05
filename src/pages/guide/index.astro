@@ -1,0 +1,24 @@
+---
+import App from '../../layouts/App.astro';
+import { guides, categories, pageTitle, site } from '../../lib/data';
+
+const title = pageTitle('分野別ガイド｜測量士試験 午前の出題を9分野に整理');
+const description = guides.indexLead;
+const cat = (slug: string) => categories.find((c) => c.slug === slug);
+---
+<App title={title} description={description} path="/guide/">
+  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 分野別ガイド</nav>
+  <h1 class="text-2xl mb-3">分野別ガイド</h1>
+  <p class="text-ink-soft leading-relaxed mb-6" set:html={guides.indexLead} />
+
+  <div class="grid gap-3 sm:grid-cols-2 mb-8">
+    {guides.guides.map((g) => (
+      <a href={g.url} class="card p-4 no-underline text-ink hover:shadow-lift transition-shadow">
+        <div class="flex items-center gap-2 mb-1"><span class="text-xl">{cat(g.slug)?.icon}</span><span class="serif text-lg">{g.name}</span><span class="ml-auto text-xs text-ink-faint">{g.questionIds.length}問</span></div>
+        <p class="text-sm text-ink-soft leading-relaxed line-clamp-3">{g.description}</p>
+      </a>
+    ))}
+  </div>
+
+  <div class="card p-6 qhtml" set:html={guides.indexBodyHtml} />
+</App>

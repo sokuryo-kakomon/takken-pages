@@ -1,0 +1,11 @@
+---
+import App from '../../layouts/App.astro';
+import ProgressDashboard from '../../components/react/ProgressDashboard';
+import { pageTitle } from '../../lib/data';
+---
+<App title={pageTitle('成績表')} description="年度別・分野別の正答率と、要復習の問題の一覧。記録はこの端末の中にだけ保存されます。" path="/progress/" noindex>
+  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 成績表</nav>
+  <h1 class="text-2xl mb-1">成績表</h1>
+  <p class="text-xs text-ink-faint mb-4">記録はお使いの端末（ブラウザ）の中にだけ保存され、外部には送信されません。別の端末やブラウザには引き継がれません。</p>
+  <ProgressDashboard client:only="react" />
+</App>

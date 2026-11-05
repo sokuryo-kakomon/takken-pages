@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* 配色は「和紙の上に墨で書く」を基調にする。
+   紙＝生成り、文字＝焦げ茶、主ボタン＝苔色、誤り＝朱、リンク＝藍、強調＝金。
+   角丸は 4px に抑え、影は薄く。派手なグラデーションは使わない。 */
+@theme {
+  --color-paper: #f7f2e6;
+  --color-paper-deep: #efe7d3;
+  --color-card: #fdfaf2;
+  --color-ink: #2b2118;
+  --color-ink-soft: #6b5d4f;
+  --color-ink-faint: #a0937f;
+  --color-line: #e3d9c4;
+  --color-moss: #5b7539;
+  --color-moss-deep: #46592c;
+  --color-moss-pale: #eef2e4;
+  --color-shu: #b7432e;
+  --color-shu-pale: #f9e9e5;
+  --color-ai: #2f4f6f;
+  --color-ai-pale: #e6edf3;
+  --color-kin: #b8912e;
+  --color-kin-pale: #f7efd8;
+
+  --font-serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "MS Mincho", serif;
+  --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", "Noto Sans JP", system-ui, sans-serif;
+
+  --shadow-card: 0 2px 8px rgba(90, 70, 40, 0.12);
+  --shadow-lift: 0 6px 18px rgba(90, 70, 40, 0.18);
+  --radius-dojo: 4px;
+}
+
+/* 自前のクラスは components レイヤーに置く。Tailwind のユーティリティ（lg:hidden など）が
+   これらより優先されるようにするため。レイヤー外に書くとユーティリティに勝ってしまう。 */
+@layer base {
+  html { background: var(--color-paper); color: var(--color-ink); }
+  body { font-family: var(--font-sans); line-height: 1.8; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: var(--font-serif); font-weight: 700; letter-spacing: 0.02em; }
+  a { color: var(--color-ai); }
+  button { font-family: inherit; }
+  ::selection { background: var(--color-kin-pale); }
+}
+
+@layer components {
+  .serif { font-family: var(--font-serif); font-weight: 700; letter-spacing: 0.02em; }
+
+  /* ---------- 共通部品 ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4em; padding: .7rem 1.4rem; border-radius: var(--radius-dojo); font-weight: 700; text-decoration: none; cursor: pointer; border: 1.5px solid transparent; transition: background .15s, color .15s, box-shadow .15s, transform .05s; line-height: 1.4; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--color-moss); color: #fff; box-shadow: var(--shadow-card); }
+  .btn-primary:hover { background: var(--color-moss-deep); }
+  .btn-ghost { background: transparent; color: var(--color-ink); border-color: var(--color-line); }
+  .btn-ghost:hover { background: var(--color-card); border-color: var(--color-ink-faint); }
+  .btn-sm { padding: .4rem .9rem; font-size: .9rem; }
+  .btn[disabled], .btn.is-disabled { opacity: .4; pointer-events: none; }
+
+  .card { background: var(--color-card); border-radius: var(--radius-dojo); box-shadow: var(--shadow-card); border: 1px solid rgba(227, 217, 196, .6); }
+  .eyebrow { font-size: .8rem; letter-spacing: .18em; color: var(--color-ink-soft); }
+  .eyebrow::before { content: "― "; }
+  .eyebrow::after { content: " ―"; }
+  .chip { display: inline-flex; align-items: center; gap: .3em; padding: .1em .7em; border-radius: 999px; font-size: .8rem; font-weight: 700; border: 1px solid currentColor; white-space: nowrap; }
+
+  /* ---------- 問題文・解説の HTML（JSON から流し込む部分） ---------- */
+  .qhtml { font-size: 1rem; line-height: 1.85; overflow-wrap: anywhere; }
+  .qhtml p { margin: .45rem 0; }
+  .qhtml b, .qhtml strong { color: var(--color-ink); }
+  .qhtml .opt { padding: .45rem .85rem; margin: .35rem 0; border-radius: var(--radius-dojo); background: #f3efe4; border-left: 4px solid #cbbfa6; }
+  .qhtml .opt.correct { background: var(--color-moss-pale); border-left-color: var(--color-moss); color: #35461f; }
+  .qhtml .opt.wrong { background: var(--color-shu-pale); border-left-color: var(--color-shu); color: #7a2a1c; }
+  .qhtml .step { padding: .45rem .85rem; margin: .35rem 0; border-radius: var(--radius-dojo); background: var(--color-ai-pale); border-left: 4px solid var(--color-ai); font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace; font-size: .94em; }
+  .qhtml .conc { padding: .55rem .85rem; margin: .7rem 0; border-radius: var(--radius-dojo); background: var(--color-kin-pale); border-left: 4px solid var(--color-kin); font-weight: 700; color: #5a3e00; }
+  /* 規則の改正があった問題の札（解説の一番上） */
+  .qhtml .notice { padding: .45rem .85rem; margin: 0 0 .7rem; border-radius: var(--radius-dojo); background: #fff3df; border: 1px solid #e9c48a; border-left: 4px solid #d6862a; font-weight: 700; color: #7a4a0a; font-size: .94em; }
+  .qhtml .keybox { background: var(--color-kin-pale); border-left: 4px solid var(--color-kin); padding: .6rem .95rem; margin: .9rem 0; border-radius: var(--radius-dojo); }
+  .qhtml .tbl-wrap { overflow-x: auto; margin: .6rem 0 1rem; }
+  .qhtml table { border-collapse: collapse; width: 100%; min-width: 320px; font-size: .95rem; background: #fff; }
+  .qhtml th { background: var(--color-paper-deep); font-weight: 700; padding: .5rem .75rem; text-align: left; border-bottom: 2px solid var(--color-line); white-space: nowrap; }
+  .qhtml td { padding: .45rem .75rem; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+  .qhtml caption { text-align: left; font-size: .9rem; color: var(--color-ink-soft); padding-bottom: .25rem; caption-side: top; }
+  .qhtml .tbl th { width: 9em; }
+  .qhtml svg { max-width: 100%; height: auto; display: block; margin: .7rem auto; background: #fff; border: 1px solid var(--color-line); border-radius: var(--radius-dojo); }
+  .qhtml sub, .qhtml sup { font-size: .75em; }
+  .qhtml h2 { font-size: 1.3rem; margin: 1.8rem 0 .7rem; padding-bottom: .35rem; border-bottom: 2px solid var(--color-line); }
+  .qhtml h3 { font-size: 1.08rem; margin: 1.3rem 0 .45rem; padding-left: .6rem; border-left: 4px solid var(--color-moss); }
+  .qhtml ul, .qhtml ol { padding-left: 1.5rem; margin: .45rem 0; }
+  .qhtml ul { list-style: disc; }
+  .qhtml ol { list-style: decimal; }
+  .qhtml li { margin: .3rem 0; }
+  .qhtml .lead { font-size: 1.05rem; color: var(--color-ink-soft); }
+  .qhtml .ctc-btn { display: inline-block; background: var(--color-moss); color: #fff; padding: .6rem 1.2rem; border-radius: var(--radius-dojo); text-decoration: none; font-weight: 700; }
+  .qhtml a { text-decoration: underline; text-underline-offset: .2em; }
+
+  /* 条文リンク（第◯条 をタップすると要点と公式リンクが出る） */
+  .lawref { background: none; border: 0; padding: 0; margin: 0; font: inherit; color: var(--color-ai); border-bottom: 1px dashed var(--color-ai); cursor: pointer; }
+  .lawref:hover { background: var(--color-ai-pale); }
+
+  /* ---------- 解答肢 ---------- */
+  .choice { display: flex; gap: .7rem; align-items: flex-start; width: 100%; text-align: left; padding: .7rem .9rem; margin: .4rem 0; background: #fff; border: 1.5px solid var(--color-line); border-radius: var(--radius-dojo); cursor: pointer; font: inherit; color: var(--color-ink); line-height: 1.7; transition: border-color .12s, background .12s, box-shadow .12s; }
+  .choice .mark { flex: none; width: 1.35rem; height: 1.35rem; margin-top: .25rem; border: 2px solid var(--color-ink-faint); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; color: transparent; transition: all .12s; }
+  .choice:hover:not([disabled]) { border-color: var(--color-moss); background: var(--color-moss-pale); box-shadow: var(--shadow-card); }
+  .choice:hover:not([disabled]) .mark { border-color: var(--color-moss); box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 8px var(--color-moss); }
+  .choice:focus-visible { outline: 3px solid var(--color-kin); outline-offset: 2px; }
+  .choice[disabled] { cursor: default; }
+  .choice.is-correct { border-color: var(--color-moss); background: var(--color-moss-pale); }
+  .choice.is-correct .mark { background: var(--color-moss); border-color: var(--color-moss); color: #fff; }
+  .choice.is-wrong { border-color: var(--color-shu); background: var(--color-shu-pale); }
+  .choice.is-wrong .mark { background: var(--color-shu); border-color: var(--color-shu); color: #fff; }
+  .choice.is-muted { opacity: .55; }
+  .choice-combo { width: auto; display: inline-flex; padding: .45rem .9rem; margin: .25rem .35rem .25rem 0; }
+  .choice-num { width: 3.2rem; justify-content: center; font-family: var(--font-serif); font-size: 1.2rem; }
+
+  /* ---------- 解説の覆い（解答前は読めないようにぼかす。DOM には入っている） ---------- */
+  .expl-veiled .expl-body { filter: blur(6px); max-height: 11rem; overflow: hidden; pointer-events: none; user-select: none; }
+  .expl-veil { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, rgba(253,250,242,.2), rgba(253,250,242,.95)); }
+
+  /* ---------- 一覧の正誤マーク（ListStatus が data-status を付ける） ---------- */
+  [data-qid] .mark-st::before { content: "－"; color: var(--color-ink-faint); font-weight: 800; }
+  [data-qid][data-status="ok"] .mark-st::before { content: "○"; color: var(--color-moss); }
+  [data-qid][data-status="ng"] .mark-st::before { content: "×"; color: var(--color-shu); }
+  [data-qid][data-weak="1"] { box-shadow: inset 3px 0 0 var(--color-shu); }
+
+  /* ---------- サイドバー ---------- */
+  .sb-link { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .45rem .7rem; border-radius: var(--radius-dojo); color: var(--color-ink); text-decoration: none; font-size: .95rem; }
+  .sb-link:hover { background: var(--color-paper-deep); }
+  .sb-link.is-active { background: var(--color-moss-pale); color: var(--color-moss-deep); font-weight: 700; }
+  .ex-hoshi, [data-exam="hoshi"] .ex-shi { display: none; }
+  [data-exam="hoshi"] .ex-hoshi { display: block; }
+  .sb-count { font-size: .78rem; color: var(--color-ink-faint); }
+  @media (max-width: 1023px) {
+    .sidebar { position: fixed; top: 0; bottom: 0; left: 0; transform: translateX(-105%); transition: transform .2s; z-index: 60; overflow-y: auto; box-shadow: var(--shadow-lift); }
+    body.sb-open .sidebar { transform: none; }
+    body.sb-open .sb-backdrop { display: block; }
+    .sb-backdrop { display: none; position: fixed; inset: 0; background: rgba(43,33,24,.4); z-index: 55; }
+  }
+
+  /* ---------- 進捗バー ---------- */
+  .bar { height: .6rem; background: var(--color-paper-deep); border-radius: 999px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--color-moss); transition: width .4s; }
+
+  /* ---------- モーダル ---------- */
+  .modal-bg { position: fixed; inset: 0; background: rgba(43,33,24,.55); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal { background: var(--color-card); border-radius: var(--radius-dojo); box-shadow: var(--shadow-lift); max-width: 640px; width: 100%; max-height: 92vh; overflow: auto; padding: 1.4rem 1.5rem; position: relative; }
+  .modal-x { position: absolute; top: .4rem; right: .7rem; font-size: 1.6rem; background: none; border: 0; cursor: pointer; color: var(--color-ink-faint); line-height: 1; }
+  .modal-x:hover { color: var(--color-ink); }
+
+  /* ---------- 印刷 ---------- */
+  @media print { .no-print { display: none !important; } .expl-veiled .expl-body { filter: none; max-height: none; } }
+}
