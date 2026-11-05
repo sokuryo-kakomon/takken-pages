@@ -45,7 +45,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setPicked(null); setRevealed(false); }, [q.id]);
   useEffect(() => {
-    if (explRef.current) linkifyLawRefs(explRef.current, lawRefs, (h) => setLaw(resolveLaw(lawRefs, h)));
+    if (explRef.current) linkifyLawRefs(explRef.current, lawRefs, (h) => setLaw(resolveLaw(lawRefs, h)), lawRefs.defaults?.[q.categorySlug]);
   }, [q.id, lawRefs]);
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { setLaw(null); setZoom(null); } };

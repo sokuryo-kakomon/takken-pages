@@ -53,6 +53,7 @@ export interface LawRefs {
   laws: { key: string; name: string; url: string }[];
   summaries: Record<string, string>;
   junsokuPages: Record<string, number>;
+  defaults?: Record<string, string>;  // 分野（categorySlug）→ 法令名の無い「第◯条」をどの法令とみるか
 }
 export interface Site {
   name: string; legacyName: string; url: string; adsenseClient: string; amazonTag: string;

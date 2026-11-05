@@ -221,17 +221,116 @@
   "laws": [
    {
     "key": "minpo",
-    "name": "民法（明治29年法律第89号）",
+    "name": "民法",
     "url": "https://laws.e-gov.go.jp/law/129AC0000000089"
    },
    {
+    "key": "shakuchi",
+    "name": "借地借家法",
+    "url": "https://laws.e-gov.go.jp/law/403AC0000000090"
+   },
+   {
+    "key": "kubun",
+    "name": "建物の区分所有等に関する法律",
+    "url": "https://laws.e-gov.go.jp/law/337AC0000000069"
+   },
+   {
+    "key": "fudosantouki",
+    "name": "不動産登記法",
+    "url": "https://laws.e-gov.go.jp/law/416AC0000000123"
+   },
+   {
     "key": "takkengyoho",
-    "name": "宅地建物取引業法（昭和27年法律第176号）",
+    "name": "宅地建物取引業法",
     "url": "https://laws.e-gov.go.jp/law/327AC1000000176"
+   },
+   {
+    "key": "toshikeikaku",
+    "name": "都市計画法",
+    "url": "https://laws.e-gov.go.jp/law/343AC0000000100"
+   },
+   {
+    "key": "kenchikukijun",
+    "name": "建築基準法",
+    "url": "https://laws.e-gov.go.jp/law/325AC0000000201"
+   },
+   {
+    "key": "kokudoriyo",
+    "name": "国土利用計画法",
+    "url": "https://laws.e-gov.go.jp/law/349AC1000000092"
+   },
+   {
+    "key": "nochi",
+    "name": "農地法",
+    "url": "https://laws.e-gov.go.jp/law/327AC0000000229"
+   },
+   {
+    "key": "moridome",
+    "name": "宅地造成及び特定盛土等規制法",
+    "url": "https://laws.e-gov.go.jp/law/336AC0000000191"
+   },
+   {
+    "key": "kukakuseiri",
+    "name": "土地区画整理法",
+    "url": "https://laws.e-gov.go.jp/law/329AC0000000119"
+   },
+   {
+    "key": "chikakoji",
+    "name": "地価公示法",
+    "url": "https://laws.e-gov.go.jp/law/344AC0000000049"
+   },
+   {
+    "key": "hinkaku",
+    "name": "住宅の品質確保の促進等に関する法律",
+    "url": "https://laws.e-gov.go.jp/law/411AC0000000081"
+   },
+   {
+    "key": "kashitanpo",
+    "name": "特定住宅瑕疵担保責任の履行の確保等に関する法律",
+    "url": "https://laws.e-gov.go.jp/law/419AC0000000066"
+   },
+   {
+    "key": "keihyo",
+    "name": "不当景品類及び不当表示防止法",
+    "url": "https://laws.e-gov.go.jp/law/337AC0000000134"
+   },
+   {
+    "key": "kikou",
+    "name": "独立行政法人住宅金融支援機構法",
+    "url": "https://laws.e-gov.go.jp/law/417AC0000000082"
+   },
+   {
+    "key": "sochi",
+    "name": "租税特別措置法",
+    "url": "https://laws.e-gov.go.jp/law/332AC0000000026"
+   },
+   {
+    "key": "chihozei",
+    "name": "地方税法",
+    "url": "https://laws.e-gov.go.jp/law/325AC0000000226"
+   },
+   {
+    "key": "inshi",
+    "name": "印紙税法",
+    "url": "https://laws.e-gov.go.jp/law/342AC0000000023"
+   },
+   {
+    "key": "tourokumenkyo",
+    "name": "登録免許税法",
+    "url": "https://laws.e-gov.go.jp/law/342AC0000000035"
+   },
+   {
+    "key": "shotoku",
+    "name": "所得税法",
+    "url": "https://laws.e-gov.go.jp/law/340AC0000000033"
    }
   ],
   "summaries": {},
-  "junsokuPages": {}
+  "junsokuPages": {},
+  "defaults": {
+   "kenri": "minpo",
+   "gyoho": "takkengyoho"
+  }
  },
  "source": {
   "name": "一般財団法人 不動産適正取引推進機構「宅地建物取引士資格試験 過去の試験問題及び正解番号表」",
