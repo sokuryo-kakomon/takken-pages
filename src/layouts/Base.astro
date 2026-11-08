@@ -33,7 +33,11 @@ const url = site.url + path;
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary" />
   <meta name="theme-color" content="#f7f2e6" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <!-- 文字の SVG は見る側の字形で化ける（測量士で検索結果に「干」と出た）ので、字を絵にした PNG/ICO を使う -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96" />
+  <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet" />
