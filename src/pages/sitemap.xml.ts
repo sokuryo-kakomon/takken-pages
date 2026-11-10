@@ -4,7 +4,7 @@ import { questions, site } from '../lib/data';
 // 成績表は個人の記録なので載せない。
 export const GET: APIRoute = () => {
   const urls = [
-    '/', '/practice/', '/about/', '/privacy/',
+    '/', '/practice/', '/books/', '/about/', '/privacy/',
     ...site.years.map((y) => `/${y.id}/`),
     ...questions.map((q) => q.url),
   ];

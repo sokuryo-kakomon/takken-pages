@@ -1,6 +1,7 @@
 ---
 import App from '../layouts/App.astro';
 import QuestionCard from './react/QuestionCard';
+import BookNote from './BookNote.astro';
 import { byId, site, SITE_NAME, EXAMS } from '../lib/data';
 import type { Question } from '../lib/types';
 
@@ -31,6 +32,7 @@ const jsonLd = {
   <h1 class="text-xl md:text-2xl mb-4 leading-snug">{q.title}<span class="block text-sm font-sans font-normal text-ink-soft mt-1">問題と正解</span></h1>
 
   <QuestionCard client:load q={q} lawRefs={site.lawRefs} />
+  <BookNote q={q} />
   <p class="text-xs text-ink-faint mt-3 leading-relaxed">
     出典：一般財団法人 不動産適正取引推進機構 公表の{q.yearLabel}宅地建物取引士資格試験の試験問題（{q.source ? <a href={q.source} target="_blank" rel="noopener">PDF</a> : 'PDF'}）。問題文は原文のまま掲載しています。正解番号も同機構の公表によります。
   </p>
