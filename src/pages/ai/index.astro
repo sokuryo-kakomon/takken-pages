@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import AiPlan from '../../components/react/AiPlan';
+import { pageTitle, SITE_NAME } from '../../lib/data';
+---
+<Base title={pageTitle('有料プラン（AI に質問）')} description={`宅建士試験の過去問について、分からない所を AI にその場で質問。有料プランは月額980円で最上位の AI が答えます。過去問・解説・成績表は無料です。`} path="/ai/">
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 有料プラン</nav>
+    <h1 class="text-2xl mb-4">有料プラン（AI に質問）</h1>
+    <div class="card p-6 qhtml mb-6">
+      <p>過去問・解説・成績表はこれまでどおり無料です。有料プランでは「AI に質問」を、より賢い AI で、より多く使えます。</p>
+      <h2 class="text-lg">🤖 AI に質問</h2>
+      <p>問題ページの解説の下にある「🤖 AI に質問」から、その問題について分からない所をその場で質問できます。AI には問題文・不動産適正取引推進機構の正解・このサイトの解説を渡したうえで答えさせています。</p>
+      <ul>
+        <li>「選択肢3はなぜ誤り？」など、解説を読んでも引っかかった所を聞けます</li>
+        <li><b>有料プランは、より賢い AI が答えます。</b>無料は標準の AI（Claude Sonnet）、有料プランは最上位の AI（Claude Opus）です。権利関係の事例問題や、宅建業法・法令上の制限で数字や例外がいくつも出てくる説明で違いが出ます</li>
+        <li>同じ問題について、続けて6往復まで聞けます</li>
+        <li>AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です</li>
+      </ul>
+      <table>
+        <tr><th></th><th>無料</th><th>有料プラン</th></tr>
+        <tr><td>料金</td><td>0円</td><td>月額 980円（税込）・毎月自動更新</td></tr>
+        <tr><td>AI に質問</td><td>1日2回</td><td>1日15回・1か月90回まで</td></tr>
+        <tr><td>答える AI</td><td>標準（Claude Sonnet）</td><td><b>最上位（Claude Opus）</b></td></tr>
+        <tr><td>過去問・解説・成績表</td><td colspan="2">どちらも無料で全部使えます</td></tr>
+      </table>
+      <p class="text-sm">この有料プランは{SITE_NAME}専用です（姉妹サイトの過去問ドリルとは別の契約です）。解約はいつでもこのページの「契約の確認・カード変更・解約」からできます。解約しても、支払い済みの期間の終わりまでは使えます。無料の質問は、混み合った日は早めに締め切ることがあります。</p>
+    </div>
+    <AiPlan client:only="react" />
+  </main>
+</Base>
