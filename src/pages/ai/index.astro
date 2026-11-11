@@ -3,12 +3,12 @@ import Base from '../../layouts/Base.astro';
 import AiPlan from '../../components/react/AiPlan';
 import { pageTitle, SITE_NAME } from '../../lib/data';
 ---
-<Base title={pageTitle('有料プラン（AI に質問）')} description={`宅建士試験の過去問について、分からない所を AI にその場で質問。有料プランは月額980円で最上位の AI が答えます。過去問・解説・成績表は無料です。`} path="/ai/">
+<Base title={pageTitle('有料プラン（AI に質問・模擬試験・一問一答）')} description={`宅建士試験の過去問について、分からない所を AI にその場で質問。間違えた問題から組む模擬試験と選択肢ごとの一問一答も。有料プランは月額980円。過去問・解説・成績表は無料です。`} path="/ai/">
   <main class="max-w-3xl mx-auto px-4 py-8">
     <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 有料プラン</nav>
-    <h1 class="text-2xl mb-4">有料プラン（AI に質問）</h1>
+    <h1 class="text-2xl mb-4">有料プラン</h1>
     <div class="card p-6 qhtml mb-6">
-      <p>過去問・解説・成績表はこれまでどおり無料です。有料プランでは「AI に質問」を、より賢い AI で、より多く使えます。</p>
+      <p>過去問・解説・成績表はこれまでどおり無料です。有料プランでは、次の3つが使えるようになります。</p>
       <h2 class="text-lg">🤖 AI に質問</h2>
       <p>問題ページの解説の下にある「🤖 AI に質問」から、その問題について分からない所をその場で質問できます。AI には問題文・不動産適正取引推進機構の正解・このサイトの解説を渡したうえで答えさせています。</p>
       <ul>
@@ -17,11 +17,17 @@ import { pageTitle, SITE_NAME } from '../../lib/data';
         <li>同じ問題について、続けて6往復まで聞けます</li>
         <li>AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です</li>
       </ul>
+      <h2 class="text-lg"><a href="/mogi/">📝 模擬試験</a></h2>
+      <p>過去問から、本番と同じ分野の並び・問題数・時間で1回分を組みます。間違えた問題・要復習の問題を優先して入れ、最後にまとめて採点します。新しく作った問題ではないので、答えは不動産適正取引推進機構の発表のとおりです。</p>
+      <h2 class="text-lg"><a href="/ox/">⭕ 一問一答</a></h2>
+      <p>過去問の選択肢を1つずつ「正しい／誤り」で答えます。間違えた問題の選択肢だけを繰り返すこともできます。</p>
       <table>
         <tr><th></th><th>無料</th><th>有料プラン</th></tr>
         <tr><td>料金</td><td>0円</td><td>月額 980円（税込）・毎月自動更新</td></tr>
         <tr><td>AI に質問</td><td>1日2回</td><td>1日15回・1か月90回まで</td></tr>
         <tr><td>答える AI</td><td>標準（Claude Sonnet）</td><td><b>最上位（Claude Opus）</b></td></tr>
+        <tr><td>模擬試験</td><td>分野を1つ選んだ回を1回だけ</td><td>全問の回も分野の回も何回でも</td></tr>
+        <tr><td>一問一答</td><td>1日10肢まで</td><td>制限なし</td></tr>
         <tr><td>過去問・解説・成績表</td><td colspan="2">どちらも無料で全部使えます</td></tr>
       </table>
       <p class="text-sm">この有料プランは{SITE_NAME}専用です（姉妹サイトの過去問ドリルとは別の契約です）。解約はいつでもこのページの「契約の確認・カード変更・解約」からできます。解約しても、支払い済みの期間の終わりまでは使えます。無料の質問は、混み合った日は早めに締め切ることがあります。</p>

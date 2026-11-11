@@ -1,0 +1,15 @@
+---
+import App from '../../layouts/App.astro';
+import MockExam from '../../components/react/MockExam';
+import { pageTitle } from '../../lib/data';
+
+const title = pageTitle('模擬試験｜間違えた問題から本番形式で');
+const description = '宅建試験の過去問から、本番と同じ分野の並び・問題数・時間で1回分を組む模擬試験。間違えた問題を優先して入れ、最後にまとめて採点します。';
+---
+<App title={title} description={description} path="/mogi/">
+  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 模擬試験</nav>
+  <h1 class="text-2xl mb-1">模擬試験</h1>
+  <p class="text-sm text-ink-soft mb-4">過去問を組み直して、本番と同じ形で1回分を解きます。新しく作った問題ではないので、答えは不動産適正取引推進機構の発表のとおりです。</p>
+  <MockExam client:only="react" />
+  <noscript><p class="card p-5">模擬試験には JavaScript が必要です。</p></noscript>
+</App>

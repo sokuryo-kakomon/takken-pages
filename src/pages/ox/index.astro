@@ -1,0 +1,15 @@
+---
+import App from '../../layouts/App.astro';
+import OxDrill from '../../components/react/OxDrill';
+import { pageTitle } from '../../lib/data';
+
+const title = pageTitle('一問一答｜過去問の選択肢を○×で');
+const description = '宅建試験の過去問の選択肢を1つずつ「正しい／誤り」で答える一問一答。正誤と理由はこのサイトの解説から。間違えた問題の選択肢だけを繰り返すこともできます。';
+---
+<App title={title} description={description} path="/ox/">
+  <nav class="text-sm text-ink-soft mb-2"><a href="/">トップ</a> ／ 一問一答</nav>
+  <h1 class="text-2xl mb-1">一問一答（選択肢を○×で）</h1>
+  <p class="text-sm text-ink-soft mb-4">過去問の選択肢を1つずつ、正しいか誤りかで答えます。正誤は不動産適正取引推進機構の発表した正解とこのサイトの解説に基づきます。表を見ないと判断できない問題と、法改正で正誤が変わり得る問題は入れていません。</p>
+  <OxDrill client:only="react" />
+  <noscript><p class="card p-5">一問一答には JavaScript が必要です。</p></noscript>
+</App>
