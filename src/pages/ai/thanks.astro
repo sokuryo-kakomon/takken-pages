@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import AiThanks from '../../components/react/AiThanks';
+import { pageTitle } from '../../lib/data';
+---
+<Base title={pageTitle('お申し込みありがとうございます')} description="AI に質問 有料プランのお申し込み完了" path="/ai/thanks/" noindex>
+  <main class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-2xl mb-4">お申し込みありがとうございます</h1>
+    <AiThanks client:only="react" />
+  </main>
+</Base>
