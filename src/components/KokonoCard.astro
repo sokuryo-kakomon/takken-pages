@@ -1,0 +1,42 @@
+---
+// 運営者のサービス「ここの登記簿」の案内。不動産登記法の問題（各年の問14）だけ、解説と本の紹介の後に出す（広告ではなく自社の案内）。
+// 押された数を数えられるよう ?from=takken を付ける。文は3サイト共通。「無料」は法務局の地図にある土地の地番だけ。
+interface Props { id: string }
+const IDS = new Set([
+  'r07-q14',
+  'r06-q14',
+  'r05-q14',
+  'r04-q14',
+  'r03-12-q14',
+  'r03-10-q14',
+  'r02-12-q14',
+  'r02-10-q14',
+  'r01-q14',
+  'h30-q14',
+  'h29-q14',
+  'h28-q14',
+  'h27-q14',
+]);
+const show = IDS.has(Astro.props.id);
+---
+{show && (
+<a href="https://kokonotoukibo.jp/?from=takken" target="_blank" rel="noopener" class="kokono-card">
+  <span class="kc-ico"><img src="/kokono-icon.svg" alt="" width="34" height="34" loading="lazy" /></span>
+  <span class="kc-t">
+    <span class="kc-cp">登記される土地の「地番」、実際の地図で見てみる&nbsp;<span aria-hidden="true">→</span></span>
+    <span class="kc-br"><b>ここの登記簿</b>　地図で選んで、登記簿を取る。</span>
+    <span class="kc-note">運営者のサービス・法務局の地図にある土地の地番は登録なし・無料で表示</span>
+  </span>
+</a>
+)}
+<style>
+.kokono-card{display:flex;align-items:center;gap:14px;margin-top:12px;padding:12px 16px;border:1px solid #d5dee8;border-radius:12px;text-decoration:none;color:#334155;
+  background-color:#f7f9fc;background-image:linear-gradient(#0f2a4408 1px,transparent 1px),linear-gradient(90deg,#0f2a4408 1px,transparent 1px);background-size:14px 14px}
+.kc-ico{flex:none;width:48px;height:48px;border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(15,42,68,.12);display:flex;align-items:center;justify-content:center}
+.kc-t{display:block;min-width:0}
+.kc-cp{display:block;font-size:15px;font-weight:700;color:#0f2a44;line-height:1.45}
+.kc-br{display:block;font-size:12px;margin-top:3px}.kc-br b{font-size:13.5px;color:#0f2a44;letter-spacing:.02em}
+.kc-note{display:block;font-size:10.5px;color:#7b8794;margin-top:3px;line-height:1.5}
+.kokono-card:hover .kc-cp{text-decoration:underline}
+@media (max-width:520px){.kokono-card{gap:10px;padding:10px 12px}.kc-ico{width:40px;height:40px;border-radius:9px}.kc-ico img{width:28px;height:28px}.kc-cp{font-size:14px;line-height:1.4}.kc-br{font-size:11px;margin-top:2px}.kc-br b{font-size:12.5px}.kc-note{font-size:10px;margin-top:2px;line-height:1.4}}
+</style>
