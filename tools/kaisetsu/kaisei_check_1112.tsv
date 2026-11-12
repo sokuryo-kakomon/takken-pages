@@ -14,3 +14,165 @@ h30	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	31条1項・33条4項�
 h27	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	35条1項 規約で伸長だけ・議決権を有しない者を除く・議案の要領
 h30	14	4	ok	https://laws.e-gov.go.jp/law/416AC0000000123	76条の5 2年以内・164条2項 5万円以下の過料
 r02-12	3	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	768条2項 離婚から5年
+h27	1	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の号と一致
+h27	3	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h27	9	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h27	10	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h27	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+h27	14	-	ok	https://laws.e-gov.go.jp/law/416AC0000000123	不登法121条 旧2項 利害関係→今3項 正当な理由
+h27	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+h27	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+h27	23	-	ok	https://laws.e-gov.go.jp/law/332AC0000000026	租特70条の2 今は18歳以上
+h27	29	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h27	31	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+h27	33	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第二・第四と一致・税は出題当時8%→今10%の計算のみ
+h27	34	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h27	35	-	未確認	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法15条は今あり・2015年4月施行かは2017年より前の版がAPIに無く未確認
+h27	38	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h27	40	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h27	41	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h27	43	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h27	45	-	ok	https://laws.e-gov.go.jp/law/419AC0000000066	基準日 旧3/31・9/30→今3/31
+h27	47	-	未確認	-	表示規約の原文（公取協）を取れず
+h28	1	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	3	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	5	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	6	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	7	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	8	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	9	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h28	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+h28	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+h28	16	-	ok	https://laws.e-gov.go.jp/law/343AC0000000100	都市計画法9条 旧17項→今18項
+h28	18	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+h28	19	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+h28	20	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+h28	24	-	ok	https://laws.e-gov.go.jp/law/325CO0000000245	令37条の16 旧50m2（貸家40）→今40m2
+h28	28	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h28	30	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h28	33	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第二・第四と一致・税は出題当時8%→今10%の計算のみ
+h28	34	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h28	37	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h28	38	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h28	42	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h28	45	-	ok	https://laws.e-gov.go.jp/law/419AC0000000066	基準日 旧3/31・9/30→今3/31
+h29	1	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h29	2	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h29	4	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h29	5	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h29	7	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h29	8	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h29	11	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法604条 旧20年→今50年
+h29	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+h29	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+h29	15	-	ok	https://laws.e-gov.go.jp/law/327AC0000000229	農地法5条1項 都道府県知事等
+h29	18	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+h29	20	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+h29	26	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第二・第四と一致・税は出題当時8%→今10%の計算のみ
+h29	27	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h29	28	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h29	34	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h29	38	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h29	40	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h29	45	-	ok	https://laws.e-gov.go.jp/law/419AC0000000066	基準日 旧3/31・9/30→今3/31
+h29	47	-	未確認	-	表示規約の原文を取れず
+h30	1	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h30	2	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h30	3	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h30	4	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h30	7	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h30	9	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+h30	10	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法252条1項と一致
+h30	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+h30	16	-	ok	https://laws.e-gov.go.jp/law/343AC0000000100	田園住居地域は2018-04施行（都市計画法9条）
+h30	18	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+h30	20	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+h30	23	-	ok	https://laws.e-gov.go.jp/law/332CO0000000043	租特令42条1項2号 昭和57年1月1日以後
+h30	24	-	ok	https://laws.e-gov.go.jp/law/325AC0000000226	73条の15の2 旧10万→今16万
+h30	26	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h30	29	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h30	30	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第二・第四と一致・税は出題当時8%→今10%の計算のみ
+h30	31	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第七・第八・第十一と一致（旧の400万円・18万円は国交省資料）
+h30	34	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h30	35	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h30	36	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+h30	45	-	ok	https://laws.e-gov.go.jp/law/419AC0000000066	基準日 旧3/31・9/30→今3/31
+h30	47	-	未確認	-	表示規約の原文を取れず
+r01	2	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r01	3	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r01	7	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r01	8	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r01	9	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r01	11	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法604条 旧20年→今50年
+r01	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+r01	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r01	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r01	27	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r01	32	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第七・第八・第十一と一致（旧の400万円・18万円は国交省資料）
+r01	34	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r01	37	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r01	43	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r01	45	-	ok	https://laws.e-gov.go.jp/law/419AC0000000066	基準日 旧3/31・9/30→今3/31
+r02-10	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+r02-10	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r02-10	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r02-10	18	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r02-10	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r02-10	33	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r02-10	41	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r02-12	4	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r02-12	5	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r02-12	7	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r02-12	10	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法251・252・958条の2の新旧と一致
+r02-12	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+r02-12	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r02-12	14	-	ok	https://laws.e-gov.go.jp/law/416AC0000000123	不登法121条 旧2項→今3項
+r02-12	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r02-12	22	-	ok	https://laws.e-gov.go.jp/law/349AC1000000092	国土法47条1号 拘禁刑
+r02-12	35	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r02-12	38	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-10	5	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r03-10	12	-	ok	https://laws.e-gov.go.jp/law/403AC0000000090	借地借家法38条の新旧の項と一致
+r03-10	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r03-10	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r03-10	22	-	ok	https://laws.e-gov.go.jp/law/349AC1000000092	国土法47条1号 拘禁刑
+r03-10	24	-	ok	https://laws.e-gov.go.jp/law/325CO0000000245	令37条の16・37条の18と一致
+r03-10	27	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-10	41	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-10	44	-	ok	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	告示第七・第八・第十一と一致（旧の400万円・18万円は国交省資料）
+r03-10	47	-	未確認	-	表示規約施行規則9条8号の原文を取れず（二次資料では一致）
+r03-12	2	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r03-12	4	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r03-12	7	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法969条 2025年改正後も証人2人以上
+r03-12	8	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r03-12	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r03-12	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r03-12	18	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r03-12	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r03-12	26	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-12	35	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-12	37	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-12	40	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r03-12	41	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r04	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r04	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r04	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r04	27	-	未確認	https://www.mlit.go.jp/tochi_fudousan_kensetsugyo/const/content/001750143.pdf	今の第七・第十一①は一致・出題当時の「第9」は旧告示の原文なし
+r04	32	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r04	34	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	法の名の変更のみ・45条 造成宅地防災区域
+r05	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r05	19	-	ok	https://laws.e-gov.go.jp/law/336AC0000000191	盛土規制法・同令の新旧の条番号と一致
+r05	28	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r05	29	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r05	31	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r05	48	-	ok	-	統計は出題当時の値で判断という注意のみ・条文の主張なし
+r06	8	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r06	13	-	ok	https://laws.e-gov.go.jp/law/337AC0000000069	区分所有法 2026-04版と一致
+r06	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r06	48	-	ok	-	統計は出題当時の値で判断という注意のみ・条文の主張なし
+r07	4	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法306条 子の監護の費用
+r07	9	-	ok	https://laws.e-gov.go.jp/law/129AC0000000089	民法の新旧の条文と一致（判例の中身は見ていない）
+r07	17	-	ok	https://laws.e-gov.go.jp/law/325AC0000000201	建築基準法の新旧の条・項・号と一致
+r07	23	-	ok	https://laws.e-gov.go.jp/law/332AC0000000026	租特72条1項1号 1000分の15・令和11年3月31日まで
+r07	34	-	ok	https://laws.e-gov.go.jp/law/327AC1000000176	宅建業法・同規則の新旧と一致
+r07	48	-	ok	-	統計は出題当時の値で判断という注意のみ・条文の主張なし
