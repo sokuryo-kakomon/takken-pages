@@ -217,14 +217,19 @@ function Chat({ q, wide }: { q: Question; wide: boolean }) {
         </div>
       </form>
       {!code && (
-        <a href="/ai/" className="ai-upsell mt-3 flex items-center gap-3 rounded-dojo border-2 border-moss bg-moss-pale px-4 py-3 no-underline text-ink hover:bg-white">
-          <span className="text-2xl">⭐</span>
-          <span className="flex-1 text-sm leading-snug"><b className="text-moss-deep">有料プラン 月980円</b>　最上位の AI が1日15回まで答えます。模擬試験・一問一答も回数無制限</span>
-          <span className="btn btn-primary btn-sm shrink-0">詳しく見る</span>
+        <a href="/ai/" className="ai-upsell block mt-3 rounded-dojo border border-line overflow-hidden no-underline text-ink text-xs hover:border-moss">
+          <table className="w-full border-collapse">
+            <thead><tr><th className="py-1.5 px-2.5"></th><th className="py-1.5 px-2.5 text-left font-normal text-ink-soft">いまの無料</th><th className="py-1.5 px-2.5 text-left border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep">有料プラン　月額980円（税込）</th></tr></thead>
+            <tbody>
+              <tr><td className="py-1.5 px-2.5 border-t border-line text-ink-soft whitespace-nowrap w-px">AI に質問</td><td className="py-1.5 px-2.5 border-t border-line text-ink-soft">標準の AI・1日2回</td><td className="py-1.5 px-2.5 border-t border-line border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep font-bold">より詳しく答える AI・1日15回</td></tr>
+              <tr><td className="py-1.5 px-2.5 border-t border-line text-ink-soft whitespace-nowrap w-px">模擬試験</td><td className="py-1.5 px-2.5 border-t border-line text-ink-soft">分野1つの回を1回だけ</td><td className="py-1.5 px-2.5 border-t border-line border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep font-bold">本番形式で何回でも</td></tr>
+            </tbody>
+          </table>
+          <div className="flex items-center justify-between gap-2 px-2.5 py-2 border-t border-line bg-[#fffdf7]"><span className="text-ink-soft">いつでも解約できます</span><span className="rounded-full bg-moss-deep text-white font-bold px-3.5 py-1 whitespace-nowrap">有料プランを見る →</span></div>
         </a>
       )}
       <p className="text-[.7rem] text-ink-faint mt-2 leading-snug">
-        AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です。{code ? '有料プラン（最上位の AI が答えます）' : <>無料は標準の AI で1日2回まで（<a href="/ai/">有料プラン</a>は最上位の AI で1日15回）</>}{remaining !== null && `・今日の残り ${remaining} 回`}。質問の内容は回答の作成にだけ使い、保存しません。
+        AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です。{code ? '有料プラン（より詳しく答える AI）' : '無料（標準の AI）'}{remaining !== null && `・今日の残り ${remaining} 回`}。質問の内容は回答の作成にだけ使い、保存しません。
       </p>
     </>
   );

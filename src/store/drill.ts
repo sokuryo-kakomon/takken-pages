@@ -11,12 +11,12 @@ const codec = {
 };
 
 export const $ox = persistentAtom<OxProgress>('takken_ox_v1', {}, codec);
-// 無料の○×は1日10肢まで。{ d: '2026-11-04', n: 3 }
+// 無料の○×も回数の制限なし（数える仕組みは残す）。{ d: '2026-11-04', n: 3 }
 export const $oxDay = persistentAtom<{ d: string; n: number }>('takken_ox_day', { d: '', n: 0 }, codec);
 // 無料の模擬試験のお試し（1回だけ）。{ shi: true }
 export const $mogiTrial = persistentAtom<Record<string, boolean>>('takken_mogi_trial', {}, codec);
 
-export const FREE_OX_PER_DAY = 10;
+export const FREE_OX_PER_DAY = Infinity; // 11-12 本人: 一問一答は無料でも回数の制限なし
 export const today = () => new Date().toLocaleDateString('sv-SE'); // 端末の日付で YYYY-MM-DD
 
 export function oxUsedToday() {
