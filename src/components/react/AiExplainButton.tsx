@@ -216,6 +216,13 @@ function Chat({ q, wide }: { q: Question; wide: boolean }) {
           <button className="btn btn-primary" disabled={busy || full || !input.trim()}>{busy ? '…' : '送る'}</button>
         </div>
       </form>
+      {!code && (
+        <a href="/ai/" className="ai-upsell mt-3 flex items-center gap-3 rounded-dojo border-2 border-moss bg-moss-pale px-4 py-3 no-underline text-ink hover:bg-white">
+          <span className="text-2xl">⭐</span>
+          <span className="flex-1 text-sm leading-snug"><b className="text-moss-deep">有料プラン 月980円</b>　最上位の AI が1日15回まで答えます。模擬試験・一問一答も回数無制限</span>
+          <span className="btn btn-primary btn-sm shrink-0">詳しく見る</span>
+        </a>
+      )}
       <p className="text-[.7rem] text-ink-faint mt-2 leading-snug">
         AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です。{code ? '有料プラン（最上位の AI が答えます）' : <>無料は標準の AI で1日2回まで（<a href="/ai/">有料プラン</a>は最上位の AI で1日15回）</>}{remaining !== null && `・今日の残り ${remaining} 回`}。質問の内容は回答の作成にだけ使い、保存しません。
       </p>
