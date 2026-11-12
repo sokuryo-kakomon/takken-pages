@@ -16,7 +16,9 @@ const S = siteJson as unknown as Site;
 const CONF = {
   name: '宅建', minutes: 120, choices: 4, choicePt: 1, tashiPt: 0, kijutsuPt: 0, totalRatio: 0,
   parts: [] as { name: string; cats: string[]; include: boolean; ratio: number }[],
-  modelLabel: '', selectNote: '',
+  modelLabel: '', selectNote: '', countNote: '',
+  // 免除科目（問46〜50）は番号ごとに中身が決まっている。統計（問48）は古い数字になるので最新の年度だけ
+  byNum: ['menjo'], latestOnlyNums: [48],
   line: '本番は50問・2時間・1問1点。合格点は年度により異なります（公表は試験の後）。',
 };
 const KEY = 'takken_mogi_now';
@@ -25,6 +27,7 @@ const PICKED = { borderColor: 'var(--color-ai)', background: 'var(--color-ai-pal
 type Kind = 'choice' | 'tashi' | 'kijutsu';
 // /data/mogi.json の1行（本文は含まない軽い一覧）
 interface Slim { id: string; year: string; num: number; cat: string; kind: Kind }
+interface Slot { cat: string; kind: Kind; num: number }
 type Ans = number | Record<string, number> | string;
 interface Run { cat: string; ids: string[]; answers: Record<string, Ans>; self: Record<string, number>; start: number; limit: number }
 
@@ -48,14 +51,16 @@ function tier(prog: Progress, id: string) {
 // 本番の分野の並び = 最新の1回分（年度の並びは site.json の years の順。令和2・3年の10月/12月も別の回）
 function slotsOf(index: Slim[]) {
   const latest = S.years.map((y) => y.id).find((y) => index.some((x) => x.year === y))!;
-  return index.filter((x) => x.year === latest).sort((a, b) => a.num - b.num).map((x) => ({ cat: x.cat, kind: x.kind }));
+  return index.filter((x) => x.year === latest).sort((a, b) => a.num - b.num).map((x): Slot => ({ cat: x.cat, kind: x.kind, num: x.num }));
 }
+const latestYear = (index: Slim[]) => S.years.map((y) => y.id).find((y) => index.some((x) => x.year === y))!;
 function buildRun(index: Slim[], prog: Progress, cat: string): Run {
   const all = slotsOf(index);
   const slots = cat === 'all' ? all : all.filter((s) => s.cat === cat);
   const used = new Set<string>();
   const ids = slots.map((s) => {
-    let pool = index.filter((x) => x.cat === s.cat && x.kind === s.kind && !used.has(x.id));
+    let pool = index.filter((x) => x.cat === s.cat && x.kind === s.kind && !used.has(x.id) &&
+      (!CONF.byNum.includes(s.cat) || x.num === s.num) && (!CONF.latestOnlyNums.includes(s.num) || !CONF.byNum.includes(s.cat) || x.year === latestYear(index)));
     if (!pool.length) pool = index.filter((x) => x.kind === s.kind && !used.has(x.id));
     pool = shuffle(pool);
     pool.sort((a, b) => tier(prog, a.id) - tier(prog, b.id) || (prog[a.id]?.at ?? 0) - (prog[b.id]?.at ?? 0));
@@ -228,14 +233,16 @@ export default function MockExam() {
               const a = run.answers[id];
               const kd = q ? kindOf(q) : 'choice';
               const mark = pts === null ? '…' : pts === max ? '○' : pts > 0 ? '△' : '×';
+              const tm = (a && typeof a === 'object') ? a : {};
               const detail = !q ? '' : kd === 'choice' ? `あなた ${typeof a === 'number' ? a : '—'} ／ 正解 ${(q.ok?.length ? q.ok : [q.answer]).join('・')}`
+                : kd === 'tashi' ? Object.entries(blanksOf(q)).map(([b, v]) => `${b}: あなた ${tm[b] ?? '—'}${tm[b] === v ? '○' : ''} ／ 正解 ${v}`).join('　') + `（${pts} / ${max}点）`
                 : `${pts ?? '—'} / ${max}点`;
               return (
                 <li key={id} className="py-2 text-sm flex gap-3 items-baseline">
                   <span className={'w-6 shrink-0 font-bold ' + (pts === max ? 'text-moss-deep' : 'text-shu')}>{mark}</span>
                   <span className="w-10 shrink-0 text-ink-soft">{k + 1}.</span>
                   <a href={q?.url} className="shrink-0 no-underline">{q?.yearLabel} 第{q?.num}問</a>
-                  <span className="text-ink-soft min-w-0 truncate">{detail}</span>
+                  <span className={'text-ink-soft min-w-0 ' + (kd === 'tashi' ? '' : 'truncate')}>{detail}</span>
                 </li>
               );
             })}
@@ -364,7 +371,7 @@ export default function MockExam() {
         </div>
         <p className="text-xs text-ink-faint mt-3">
           本番と同じ分野の並びで、過去問から1回分を組みます。間違えた問題・要復習の問題（いま {weakN}問）を先に入れ、足りない分を未回答、解けた問題の順に足します。
-          途中では正誤を出さず、最後にまとめて採点します。{CONF.selectNote}
+          途中では正誤を出さず、最後にまとめて採点します。{CONF.selectNote}{CONF.countNote}
         </p>
       </div>
       <div className="card p-5 flex flex-wrap items-center gap-4">

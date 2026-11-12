@@ -18,20 +18,31 @@ const OPT = /<div class="opt(?: correct)?">\s*<b>([^<]*)<\/b>([\s\S]*?)<\/div>/g
 const TRUE = new Set(['正しい', '妥当', '適当', '適切', '正']);
 const FALSE = new Set(['誤り', '妥当でない', '不適当', '不適切', '誤']);
 
-// 問題文の頭（肢だけでは何の話か分からないので添える）。「〜のうち、正しいものはどれか。」は○×では紛らわしいので落とす
 function stemOf(q: Question) {
+  // 問題文は前提（事案・「次の文章」・なお書き）まで全部出す。かっこ（「」・（））の中の「。」では切らない
   const t = q.statementText;
-  // かっこ（「」・（））の中の「。」では切らない
-  let depth = 0, i = -1;
+  const sents: string[] = [];
+  let depth = 0, from = 0;
   for (let k = 0; k < t.length; k++) {
     const ch = t[k];
     if (ch === '「' || ch === '（' || ch === '(') depth++;
     else if ((ch === '」' || ch === '）' || ch === ')') && depth > 0) depth--;
-    else if (ch === '。' && depth === 0) { i = k; break; }
+    else if (ch === '。' && depth === 0) { sents.push(t.slice(from, k + 1)); from = k + 1; }
   }
-  let s = i > 0 && i < 200 ? t.slice(0, i + 1) : t.slice(0, 160) + '…';
-  s = s.replace(/のうち、?((?:(?:[^、。（(]|[（(][^）)]*[）)])*(?:によれば|に照らし(?:て)?|によると|に基づけば))?)、?(?:[^、。（(]|[（(][^）)]*[）)])*(?:どれか|いくつあるか)。$/, (_m, p: string) => (p ? `（${p}）` : ''));
-  return s;
+  if (from < t.length) sents.push(t.slice(from));
+  // 「〜のうち、◯◯によれば、正しいものはどれか。」は○×では紛らわしいので「〜次の記述（◯◯によれば）」に直す
+  const out = sents.map((x) => {
+    const m = x.match(/(?:どれか|いくつあるか)([（(][^）)]*[）)])?。?$/);
+    if (!m) return x;
+    const note = m[1] ?? '';
+    let b = x.replace(/([（(][^）)]*[）)])?。?$/, '').replace(/、?(?:[^、（(]|[（(][^）)]*[）)])*(?:どれか|いくつあるか)$/, '');
+    const i = b.indexOf('のうち');
+    if (i >= 0) { const mid = b.slice(i + 3).replace(/^、/, ''); b = b.slice(0, i) + (mid ? `（${mid}）` : ''); }
+    b = b.replace(/次の[ア-オa-eＡ-Ｅ][～〜~－\-][ア-オa-eＡ-Ｅ]の/, '次の');
+    return b ? b + '。' + note : note;
+  }).join('');
+  // 注（＊）の本文がデータに無い問は印だけ残ると紛らわしいので外す
+  return (out.match(/＊/g) || []).length === 1 ? out.replace('＊', '') : out;
 }
 
 export function oxItems(qs: Question[], examName: string): OxItem[] {
