@@ -9,7 +9,7 @@ import { $aiCode, checkPaid, type PaidState } from '../../store/ai';
 
 // 一問一答（肢ごとの○×）。過去問の肢を1つずつ「正しい／誤り」で答える。
 // 材料は解説で正誤を確かめ済みの肢だけ（/data/ox.json。src/lib/ox.ts で作る）。
-// 無料は1日10肢まで、有料プランは無制限。
+// 11-12 から無料でも回数の制限なし。
 
 const S = siteJson as unknown as Site;
 type Mode = 'random' | 'fromWrong' | 'oxWrong' | 'fresh';
@@ -166,7 +166,7 @@ export default function OxDrill() {
         <span className="text-sm text-ink-soft">
           {filtered.length === 0 ? 'この条件に当てはまる肢はありません。'
             : paid === 'paid' ? '有料プラン：回数の制限なし'
-            : `無料：1日${FREE_OX_PER_DAY}肢まで（今日の残り ${left}）`}
+            : '回数の制限なしで解けます'}
         </span>
       </div>
     </div>
