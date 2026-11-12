@@ -99,8 +99,9 @@ export default function OxDrill() {
           <button type="button" className="btn btn-ghost btn-sm" onClick={quit}>終了</button>
         </div>
         <article className="card p-5 md:p-7">
+          {!blocked && <>
           <div className="text-xs text-ink-faint mb-2">{it.label}</div>
-          <p className="text-sm text-ink-soft mb-3">{it.stem}</p>
+          <p className="text-sm text-ink-soft mb-3 whitespace-pre-line">{it.stem}</p>
           <div className="qhtml text-[1.1rem] px-4 py-3 bg-paper rounded-dojo" dangerouslySetInnerHTML={{ __html: it.html }} />
           <div className="text-sm font-bold text-moss-deep mt-5 mb-2">👇 この記述は？</div>
           <div className="grid grid-cols-2 gap-3">
@@ -112,6 +113,7 @@ export default function OxDrill() {
               </button>
             ))}
           </div>
+          </>}
           {blocked && (
             <div className="mt-4 px-4 py-3 rounded-dojo bg-paper-deep text-sm">
               今日の無料ぶん（{FREE_OX_PER_DAY}肢）を使い切りました。明日また解けます。<br />
