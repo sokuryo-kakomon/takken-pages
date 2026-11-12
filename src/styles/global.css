@@ -147,3 +147,7 @@
   /* ---------- 印刷 ---------- */
   @media print { .no-print { display: none !important; } .expl-veiled .expl-body { filter: none; max-height: none; } }
 }
+
+/* 本文の幅。ヘッダーの「幅」で狭くできる（その人のブラウザに覚える） */
+:root { --wrap: 96rem; }
+:root[data-narrow] { --wrap: 72rem; }

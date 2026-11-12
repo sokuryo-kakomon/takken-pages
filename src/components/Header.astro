@@ -12,7 +12,7 @@ const nav = [
 ];
 ---
 <header class="sticky top-0 z-50 border-b border-line bg-paper/92 backdrop-blur">
-  <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-2">
+  <div class="max-w-[var(--wrap)] mx-auto px-4 h-14 flex items-center gap-2">
     {withSidebar && <button id="sb-toggle" type="button" class="lg:hidden btn btn-ghost btn-sm px-2.5" aria-label="メニュー">☰</button>}
     <a href="/" class="serif text-xl text-ink no-underline flex items-baseline gap-2 min-w-0">
       <span class="hidden md:inline whitespace-nowrap">{SITE_NAME}</span>
@@ -31,6 +31,21 @@ const nav = [
             + (!n.href.endsWith('#select') && path.startsWith(n.href) ? ' font-bold text-moss-deep' : '')}>{n.label}</a>
       ))}
     </nav>
+    {/* 大きい画面だけ。本文の幅を広い（標準）／狭いに切り替える */}
+    <button id="wide-toggle" type="button" class="hidden xl:inline-flex items-center gap-1 ml-1 px-2.5 py-1 rounded-full border border-line text-xs text-ink-soft hover:bg-paper-deep whitespace-nowrap" title="本文の幅を切り替える">
+      <span aria-hidden="true">↔</span><span data-wide-label>幅を狭く</span>
+    </button>
+    <script is:inline>(function () {
+      var b = document.getElementById('wide-toggle'); if (!b) return;
+      var h = document.documentElement, l = b.querySelector('[data-wide-label]');
+      function show() { var w = h.hasAttribute('data-narrow'); l.textContent = w ? '幅を広く' : '幅を狭く'; b.setAttribute('aria-pressed', w ? 'true' : 'false'); }
+      b.addEventListener('click', function () {
+        if (h.hasAttribute('data-narrow')) h.removeAttribute('data-narrow'); else h.dataset.narrow = '';
+        try { localStorage.setItem('narrow', h.hasAttribute('data-narrow') ? '1' : '0'); } catch (e) {}
+        show();
+      });
+      show();
+    })();</script>
   </div>
   <script is:inline>if (document.documentElement.dataset.exam === 'hoshi') document.querySelectorAll('a[data-exam-link]').forEach((a) => { a.href = a.dataset.examLink + '?exam=hoshi'; });</script>
 </header>

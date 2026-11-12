@@ -46,6 +46,7 @@ const url = site.url + path;
   {/* 演習・成績表など両方の試験で使うページで、?exam=hoshi なら横と上のメニューを測量士補にする（描く前に決める） */}
   <script is:inline>if (/[?&]exam=hoshi(&|$)/.test(location.search)) document.documentElement.dataset.exam = 'hoshi';</script>
   <slot name="head" />
+  <script is:inline>try { if (localStorage.getItem('narrow') === '1') document.documentElement.dataset.narrow = ''; } catch (e) {}</script>
 </head>
 <body class="min-h-screen bg-paper text-ink font-sans">
   <Header withSidebar={withSidebar} />

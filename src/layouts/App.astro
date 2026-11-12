@@ -15,7 +15,7 @@ const props = Astro.props;
 ---
 <Base {...props} withSidebar>
   <div class="sb-backdrop" id="sb-backdrop"></div>
-  <div class="max-w-6xl mx-auto px-4 py-6 lg:flex lg:gap-8 lg:items-start">
+  <div class="max-w-[var(--wrap)] mx-auto px-4 py-6 lg:flex lg:gap-8 lg:items-start">
     <Sidebar />
     <main class="flex-1 min-w-0">
       <slot />

@@ -15,7 +15,7 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
 ---
 <section class="relative overflow-hidden">
   <div class="absolute -right-10 -top-16 text-[22rem] leading-none serif text-paper-deep select-none pointer-events-none" aria-hidden="true">{bg}</div>
-  <div class="relative max-w-6xl mx-auto px-4 pt-12 pb-10 md:pt-20 md:pb-14 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+  <div class="relative max-w-[var(--wrap)] mx-auto px-4 pt-12 pb-10 md:pt-20 md:pb-14 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
     <div>
       <h1 class="text-4xl md:text-6xl lg:text-5xl xl:text-[3.5rem] leading-tight mb-4"><span class="inline-block">{ex.name}の過去問、</span><br /><span class="inline-block">{span.n}回分・全{ex.questions.length}問。</span></h1>
       <p class="text-lg text-ink-soft mb-6"><span class="inline-block">問題文は原文のまま、</span><span class="inline-block">1問1ページ。</span><span class="inline-block">登録不要・無料。</span></p>
@@ -46,7 +46,7 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
   </div>
 </section>
 
-<section id="about" class="max-w-6xl mx-auto px-4 pb-6 scroll-mt-16">
+<section id="about" class="max-w-[var(--wrap)] mx-auto px-4 pb-6 scroll-mt-16">
   <div class="border-t border-line pt-10 space-y-10"><slot /></div>
 </section>
 
