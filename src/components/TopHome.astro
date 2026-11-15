@@ -29,9 +29,18 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
 
     <!-- 右のカード: ランダム10問・年度・分野（年度が主、分野は小さく） -->
     <div id="select" class="bg-card border border-line rounded-2xl p-5 md:p-7 shadow-lift scroll-mt-20">
-      <a href={`/practice/?${exq}mode=random&n=10&go=1`} class="flex items-center justify-between rounded-dojo border border-moss px-4 py-3 mb-6 font-bold text-moss-deep no-underline hover:bg-moss-pale">
-        ランダム10問を解く<span class="text-xs font-normal text-ink-soft">全年度から ›</span>
-      </a>
+      <!-- 解き方を3つ並べる（模擬試験・一問一答がサイドバーにしか無く見つけにくかった） -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
+        <a href={`/practice/?${exq}mode=random&n=10&go=1`} class="flex flex-col justify-center rounded-dojo border border-moss px-4 py-3 font-bold text-moss-deep no-underline hover:bg-moss-pale">
+          ランダム10問<span class="text-xs font-normal text-ink-soft">全年度から ›</span>
+        </a>
+        <a href={`/mogi/${exam === 'shi' ? '' : '?exam=hoshi'}`} class="flex flex-col justify-center rounded-dojo border border-moss px-4 py-3 font-bold text-moss-deep no-underline hover:bg-moss-pale">
+          📝 模擬試験<span class="text-xs font-normal text-ink-soft">本番と同じ形・時間つき ›</span>
+        </a>
+        <a href={`/ox/${exam === 'shi' ? '' : '?exam=hoshi'}`} class="flex flex-col justify-center rounded-dojo border border-moss px-4 py-3 font-bold text-moss-deep no-underline hover:bg-moss-pale">
+          ⭕ 一問一答<span class="text-xs font-normal text-ink-soft">○×でテンポよく ›</span>
+        </a>
+      </div>
       <h2 class="text-xs tracking-[0.2em] text-ink-soft font-normal mb-3">年度で解く<span class="tracking-normal ml-2 text-ink-faint">（R＝令和・H＝平成）</span></h2>
       <div class="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-6">
         {ys.map((y) => (

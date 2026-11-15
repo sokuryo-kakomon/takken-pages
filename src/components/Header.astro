@@ -7,6 +7,7 @@ const hoshi = examOfPath(path) === 'hoshi';
 // exam: 測量士補で見ているときは ?exam=hoshi を付ける。演習・成績表のページでは下の script が付ける
 const nav = [
   { href: '/practice/', label: '演習', mobile: true, exam: true },
+  { href: '/mogi/', label: '模擬試験', mobile: false, exam: true },
   { href: hoshi ? '/hoshi/#select' : '/#select', label: '年度・分野', mobile: false, exam: false },
   { href: '/progress/', label: '成績表', mobile: true, exam: true },
 ];
