@@ -3,6 +3,7 @@ import { useStore } from '@nanostores/react';
 import siteJson from '../../data/site.json';
 import type { Exam, QuestionIndex, Site } from '../../lib/types';
 import { showExam } from '../../lib/examui';
+import WeakSummary from './WeakSummary';
 import { $progress, $bookmarks, $days, isWeak, resetProgress, streak, summarize } from '../../store/progress';
 
 const S = siteJson as unknown as Site;
@@ -84,6 +85,8 @@ export default function ProgressDashboard() {
         <h2 className="text-lg mb-2">分野別</h2>
         {S.categories.filter((c) => index.some((x) => x.categorySlug === c.slug)).map((c) => <Row key={c.slug} label={`${c.icon} ${c.name}`} s={summarize(ids((x) => x.categorySlug === c.slug), prog)} href={`/practice/?${q}cat=${c.slug}`} />)}
       </div>
+
+      <WeakSummary index={index} exam={exam} q={q} note="合格点は年度ごとに変わります（近年は50問中 31〜38点）。" />
 
       {weak.length > 0 && (
         <div className="card p-5">

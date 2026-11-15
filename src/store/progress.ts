@@ -65,6 +65,9 @@ export function toggleBookmark(qid: string) {
 // 要復習 = 一度でも間違えていて、まだ 2 回連続で正解できていない
 export const isWeak = (r?: Rec) => !!r && r.ngCount > 0 && r.okStreak < 2;
 
+// 間違えた問題だけ（模擬試験・弱点まとめで同じ数え方）= 直近で不正解 または 要復習
+export const needsReview = (r?: Rec) => (!!r?.answered && !r.correct) || isWeak(r);
+
 export function summarize(ids: string[], prog: Progress) {
   let answered = 0, correct = 0, weak = 0;
   for (const id of ids) {

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '@nanostores/react';
 import siteJson from '../../data/site.json';
 import type { Question, Site } from '../../lib/types';
-import { $progress, isWeak, recordAnswer, type Progress } from '../../store/progress';
+import { $progress, isWeak, recordAnswer, type Progress, needsReview } from '../../store/progress';
 import { $mogiTrial } from '../../store/drill';
 import { $aiCode, checkPaid, type PaidState } from '../../store/ai';
 
@@ -56,6 +56,12 @@ function slotsOf(index: Slim[]) {
 const latestYear = (index: Slim[]) => S.years.map((y) => y.id).find((y) => index.some((x) => x.year === y))!;
 function buildRun(index: Slim[], prog: Progress, cat: string): Run {
   const all = slotsOf(index);
+  // 間違えた問題だけ（有料）: 直近で不正解を先に、その中で古い順に、本番の問題数まで
+  if (cat === 'weak') {
+    const ids = shuffle(index.filter((x) => needsReview(prog[x.id])))
+      .sort((a, b) => tier(prog, a.id) - tier(prog, b.id) || (prog[a.id]?.at ?? 0) - (prog[b.id]?.at ?? 0)).slice(0, all.length).map((x) => x.id);
+    return { cat, ids, answers: {}, self: {}, start: Date.now(), limit: Math.round((CONF.minutes * 60 * ids.length) / all.length) };
+  }
   const slots = cat === 'all' ? all : all.filter((s) => s.cat === cat);
   const used = new Set<string>();
   const ids = slots.map((s) => {
@@ -109,6 +115,7 @@ export default function MockExam() {
 
   useEffect(() => {
     fetch('/data/mogi.json').then((r) => r.json()).then(setIndex);
+    if (new URLSearchParams(location.search).get('range') === 'weak') setCat('weak');
     try { const saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved?.ids) setRun({ self: {}, ...saved }); } catch { /* 無ければ新しく */ }
   }, []);
   useEffect(() => { checkPaid(code).then(setPaid); }, [code]);
@@ -132,7 +139,7 @@ export default function MockExam() {
   const canFull = paid === 'paid';
   const canCat = paid === 'paid' || !trial.shi;
   const begin = () => {
-    if (cat === 'all' ? !canFull : !canCat) return;
+    if (cat === 'all' || cat === 'weak' ? !canFull : !canCat) return;
     if (paid !== 'paid') $mogiTrial.set({ ...$mogiTrial.get(), shi: true });
     setRun(buildRun(index, prog, cat)); setI(0); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0);
   };
@@ -357,10 +364,10 @@ export default function MockExam() {
   const on = 'bg-moss text-white border-moss';
   const off = 'bg-card border-line hover:border-ink-faint';
   const slots = slotsOf(index);
-  const n = cat === 'all' ? slots.length : slots.filter((s) => s.cat === cat).length;
+  const weakN = index.filter((x) => needsReview(prog[x.id])).length;
+  const n = cat === 'all' ? slots.length : cat === 'weak' ? Math.min(weakN, slots.length) : slots.filter((s) => s.cat === cat).length;
   const minutes = Math.round((CONF.minutes * n) / slots.length);
-  const allowed = cat === 'all' ? canFull : canCat;
-  const weakN = index.filter((x) => tier(prog, x.id) <= 1).length;
+  const allowed = (cat === 'all' || cat === 'weak' ? canFull : canCat) && n > 0;
   return (
     <div className="space-y-5">
       <div className="card p-5">
@@ -368,6 +375,7 @@ export default function MockExam() {
         <div className="flex flex-wrap gap-2">
           <button className={sel + (cat === 'all' ? on : off)} onClick={() => setCat('all')}>本番と同じ 全{slots.length}問</button>
           {cats.map((c) => <button key={c.slug} className={sel + (cat === c.slug ? on : off)} onClick={() => setCat(c.slug)}>{c.icon} {c.name}だけ</button>)}
+          <button className={sel + (cat === 'weak' ? on : off)} onClick={() => setCat('weak')}>❗ 間違えた問題だけ（{weakN > slots.length ? `${weakN}問のうち最大${slots.length}問` : `${weakN}問`}）</button>
         </div>
         <p className="text-xs text-ink-faint mt-3">
           本番と同じ分野の並びで、過去問から1回分を組みます。間違えた問題・要復習の問題（いま {weakN}問）を先に入れ、足りない分を未回答、解けた問題の順に足します。
@@ -378,7 +386,8 @@ export default function MockExam() {
         <div className="serif text-3xl">{n}<span className="text-base text-ink-soft"> 問 ・ {minutes}分</span></div>
         <button className="btn btn-primary text-lg px-8" disabled={!allowed || paid === 'checking'} onClick={begin}>始める</button>
         <span className="text-sm text-ink-soft">
-          {paid === 'paid' ? '有料プラン：何回でも'
+          {paid === 'paid' ? (cat === 'weak' && n === 0 ? '間違えた問題はいまありません。' : cat === 'weak' ? `有料プラン：間違えた問題を先に、その中で古い順に ${n}問` : '有料プラン：何回でも')
+            : cat === 'weak' ? <>間違えた問題だけの回は有料プラン（月額980円）です。<a href="/ai/">有料プランを見る →</a></>
             : cat === 'all' ? <>全{slots.length}問の回は有料プラン（月額980円）です。<a href="/ai/">有料プランを見る →</a> 無料では分野を1つ選んだ回を1回試せます。</>
             : canCat ? '無料のお試し（1回だけ）'
             : <>無料のお試しは使いました。<a href="/ai/">有料プランを見る →</a></>}
