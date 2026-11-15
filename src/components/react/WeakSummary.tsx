@@ -8,7 +8,7 @@ import { $aiCode, checkPaid, type PaidState } from '../../store/ai';
 // 弱点まとめ（有料プラン）。成績表の記録だけで出す（AI は使わない＝原価なし）。
 // ・分野ごとの正答率を低い順に並べ、弱い分野を3つまで（10問解いたら出す）
 // ・本番と同じ分野の割合で見た「いまの正答率の目安」（本番の問題数ぶん解いたら出す）
-// ・間違えた問題だけの模擬試験へ
+// ・間違えた問題だけの解き直しへ
 // サイトごとの違いは props で: pass（基準の問題数）・showCount（○問中 約○問 を出すか）・label・note
 const S = siteJson as unknown as Site;
 const MIN = 3; // 分野の正答率を出すのに要る解答数（少ないと当てにならない）
@@ -37,7 +37,7 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
   const expectN = Math.round(expect);
   const expectPct = slots.length ? Math.round((expect / slots.length) * 100) : 0;
   const ready = slots.length > 0 && all.answered >= slots.length; // 目安は本番の問題数ぶん解いてから
-  // 模擬試験の「間違えた問題だけ」と同じ数え方
+  // 「間違えた問題だけで解き直し」と同じ数え方
   const weakN = index.filter((x) => needsReview(prog[x.id])).length;
   const runN = Math.min(weakN, slots.length);
   const mogi = `/mogi/?${q}range=weak`;
@@ -54,7 +54,7 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
     return (
       <div className="card p-5">
         {head}
-        <p className="text-sm text-ink-soft">あなたの解答の記録から、正答率の低い分野・{label}（過去問の記録から）・間違えた問題だけの模擬試験をまとめて出します。</p>
+        <p className="text-sm text-ink-soft">あなたの解答の記録から、正答率の低い分野・{label}（過去問の記録から）・間違えた問題だけの解き直しをまとめて出します。</p>
         <div className="mt-3 relative">
           <span className="absolute -top-2 left-2 z-10 text-[11px] px-1.5 rounded bg-ink text-white">見本</span>
           <div className="p-3 rounded-dojo bg-paper text-sm text-ink-faint select-none" aria-hidden="true" style={{ filter: 'blur(3px)' }}>

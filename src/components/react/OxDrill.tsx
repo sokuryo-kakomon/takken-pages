@@ -117,7 +117,7 @@ export default function OxDrill() {
           {blocked && (
             <div className="mt-4 px-4 py-3 rounded-dojo bg-paper-deep text-sm">
               今日の無料ぶん（{FREE_OX_PER_DAY}肢）を使い切りました。明日また解けます。<br />
-              有料プラン（月額980円）なら一問一答と模擬試験は回数の制限なし、AI に質問は1日15回まで使えます。<a href="/ai/">有料プランを見る →</a>
+              有料プラン（月額980円）なら、AI に質問は1日15回まで使えます。<a href="/ai/">有料プランを見る →</a>
             </div>
           )}
           {answer !== null && (
