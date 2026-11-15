@@ -109,7 +109,7 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        {weakN > 0 ? <a className="btn btn-primary btn-sm" href={mogi}>間違えた問題だけで模擬試験（{runN < weakN ? `${weakN}問のうち最大${slots.length}問` : `${weakN}問`}）</a> : <span className="text-sm text-ink-soft">間違えた問題はいまありません。</span>}
+        {weakN > 0 ? <a className="btn btn-primary btn-sm" href={mogi}>間違えた問題だけで解き直す（{runN < weakN ? `${weakN}問のうち最大${slots.length}問` : `${weakN}問`}）</a> : <span className="text-sm text-ink-soft">間違えた問題はいまありません。</span>}
       </div>
       {foot}
     </div>

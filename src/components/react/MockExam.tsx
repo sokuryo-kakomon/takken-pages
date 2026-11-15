@@ -3,13 +3,10 @@ import { useStore } from '@nanostores/react';
 import siteJson from '../../data/site.json';
 import type { Question, Site } from '../../lib/types';
 import { $progress, isWeak, recordAnswer, type Progress, needsReview } from '../../store/progress';
-import { $mogiTrial } from '../../store/drill';
 import { $aiCode, checkPaid, type PaidState } from '../../store/ai';
 
-// 模擬試験。過去問から本番と同じ分野の並び・同じ問題数・同じ時間で1回分を組み、最後にまとめて採点する。
-// 中身は「間違えた問題」を優先して選ぶ（直近で不正解 → 要復習 → 未回答 → 正解済みの古い順）。
-// 新しい問題は作らない（答えは不動産適正取引推進機構の発表のまま）。
-// 無料は「分野を1つ選んだ短い回」を1回だけ。有料プランは全問の回も分野の回も何度でも。
+// 模擬試験。年度を選んで、その年度の問題を順に、本番と同じ時間で解き、最後にまとめて採点する（無料で何回でも）。
+// 有料プランは「間違えた問題だけで解き直し」（直近で不正解を先に、その中で古い順に）。新しい問題は作らない。
 
 const S = siteJson as unknown as Site;
 // 本番の形（宅建: 50問・2時間・1問1点。合格点は年度ごとに発表されるので数字は持たない）
@@ -21,6 +18,9 @@ const CONF = {
   byNum: ['menjo'], latestOnlyNums: [48],
   line: '本番は50問・2時間・1問1点。合格点は年度により異なります（公表は試験の後）。',
 };
+const FULL = 50; // 本番の問題数（時間はこの割合で）
+// その年度の合格点（不動産適正取引推進機構の発表）
+const PASSMARK: Record<string, number> = { r07: 33, r06: 37, r05: 36, r04: 36, 'r03-12': 34, 'r03-10': 34, 'r02-12': 36, 'r02-10': 38, r01: 35, h30: 37, h29: 35, h28: 35, h27: 31 };
 const KEY = 'takken_mogi_now';
 const PICKED = { borderColor: 'var(--color-ai)', background: 'var(--color-ai-pale)' };
 
@@ -56,6 +56,11 @@ function slotsOf(index: Slim[]) {
 const latestYear = (index: Slim[]) => S.years.map((y) => y.id).find((y) => index.some((x) => x.year === y))!;
 function buildRun(index: Slim[], prog: Progress, cat: string): Run {
   const all = slotsOf(index);
+  // 年度ごと（無料）: その年度の問題を順に、本番と同じ時間で
+  if (cat.startsWith('y:')) {
+    const ids = index.filter((x) => x.year === cat.slice(2)).sort((a, b) => a.num - b.num).map((x) => x.id);
+    return { cat, ids, answers: {}, self: {}, start: Date.now(), limit: Math.round((CONF.minutes * 60 * ids.length) / FULL) };
+  }
   // 間違えた問題だけ（有料）: 直近で不正解を先に、その中で古い順に、本番の問題数まで
   if (cat === 'weak') {
     const ids = shuffle(index.filter((x) => needsReview(prog[x.id])))
@@ -111,12 +116,18 @@ export default function MockExam() {
   const [paid, setPaid] = useState<PaidState>('checking');
   const code = useStore($aiCode);
   const prog = useStore($progress);
-  const trial = useStore($mogiTrial);
 
   useEffect(() => {
     fetch('/data/mogi.json').then((r) => r.json()).then(setIndex);
-    if (new URLSearchParams(location.search).get('range') === 'weak') setCat('weak');
-    try { const saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved?.ids) setRun({ self: {}, ...saved }); } catch { /* 無ければ新しく */ }
+    const sp = new URLSearchParams(location.search);
+    if (sp.get('range') === 'weak') setCat('weak');
+    if (sp.get('year')) setCat('y:' + sp.get('year'));
+    // 途中で閉じた回があれば続きから（前の作りの「分野の回・全問の回」は続きが無いので捨てる）
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (saved?.ids && (saved.cat === 'weak' || String(saved.cat).startsWith('y:'))) setRun({ self: {}, ...saved });
+      else if (saved) localStorage.removeItem(KEY);
+    } catch { /* 無ければ新しく */ }
   }, []);
   useEffect(() => { checkPaid(code).then(setPaid); }, [code]);
   useEffect(() => { if (run && !graded) try { localStorage.setItem(KEY, JSON.stringify(run)); } catch { /* 保存できなくても続けられる */ } }, [run, graded]);
@@ -137,11 +148,12 @@ export default function MockExam() {
   if (!index) return <div className="card p-6 text-ink-soft">読み込み中…</div>;
 
   const canFull = paid === 'paid';
-  const canCat = paid === 'paid' || !trial.shi;
+  const ys = S.years.filter((y) => index.some((x) => x.year === y.id));
+  // 選んでいる物（年度が未選択なら最新の年度）
+  const cc = cat === 'weak' || (cat.startsWith('y:') && ys.some((y) => 'y:' + y.id === cat)) ? cat : 'y:' + ys[0].id;
   const begin = () => {
-    if (cat === 'all' || cat === 'weak' ? !canFull : !canCat) return;
-    if (paid !== 'paid') $mogiTrial.set({ ...$mogiTrial.get(), shi: true });
-    setRun(buildRun(index, prog, cat)); setI(0); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0);
+    if (cc === 'weak' && !canFull) return;
+    setRun(buildRun(index, prog, cc)); setI(0); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0);
   };
   function grade() {
     if (!run) return;
@@ -174,7 +186,8 @@ export default function MockExam() {
     const sum = (rs: typeof rows) => ({ pts: rs.reduce((s, r) => s + (r.pts ?? 0), 0), max: rs.reduce((s, r) => s + r.max, 0) });
     const total = sum(rows);
     const pending = rows.filter((r) => r.pts === null).length;
-    const full = run.cat === 'all';
+    const full = run.cat.startsWith('y:');
+    const yName = full ? ys.find((y) => 'y:' + y.id === run.cat)?.label ?? '' : '間違えた問題の解き直し';
     const parts = CONF.parts.map((p) => ({ ...p, ...sum(rows.filter((r) => r.q && p.cats.includes(r.q.categorySlug) === p.include)) })).filter((p) => p.max > 0);
     const passTotal = total.max > 0 && total.pts / total.max >= CONF.totalRatio;
     const passParts = parts.every((p) => p.pts / p.max >= p.ratio);
@@ -183,12 +196,17 @@ export default function MockExam() {
     return (
       <div className="space-y-5">
         <div className="card p-6 text-center">
-          <div className="eyebrow mb-2">{CONF.name} 模擬試験の結果</div>
+          <div className="eyebrow mb-2">{CONF.name} {yName}の結果</div>
           <div className="serif text-5xl text-moss-deep">{total.pts}<span className="text-2xl text-ink-soft"> / {total.max}点</span></div>
           <div className="text-ink-soft mt-1">{run.ids.length}問</div>
           {parts.length > 1 && (
             <div className="flex flex-wrap justify-center gap-4 mt-2 text-sm">
               {parts.map((p) => <span key={p.name}>{p.name} <b>{p.pts}</b> / {p.max}点</span>)}
+            </div>
+          )}
+          {full && PASSMARK[run.cat.slice(2)] !== undefined && (
+            <div className={'inline-block mt-3 px-4 py-2 rounded-dojo font-bold ' + (total.pts >= PASSMARK[run.cat.slice(2)] ? 'bg-moss-pale text-moss-deep' : 'bg-shu-pale text-shu')}>
+              この年度の合格点は {PASSMARK[run.cat.slice(2)]}点{total.pts >= PASSMARK[run.cat.slice(2)] ? '。届いています' : `。あと ${PASSMARK[run.cat.slice(2)] - total.pts}点`}
             </div>
           )}
           {pending > 0 && <p className="text-sm text-shu mt-2">記述 {pending}問 の自己採点がまだです（下で採点すると点数に入ります）。</p>}
@@ -197,9 +215,10 @@ export default function MockExam() {
               {passTotal && passParts ? '基準の目安に届いています' : '基準の目安に届いていません'}
             </div>
           )}
-          <p className="text-xs text-ink-faint mt-2">{CONF.line} 過去問の組み直しなので、本番の点数を約束するものではありません。</p>
+          <p className="text-xs text-ink-faint mt-2">{CONF.line} {full ? 'その年度の問題を本番と同じ時間の割合で解いた結果です。' : '過去問の組み直しなので、本番の点数を約束するものではありません。'}</p>
           <div className="flex flex-wrap justify-center gap-2 mt-5">
-            <button className="btn btn-primary" onClick={quit}>もう1回分つくる</button>
+            <button className="btn btn-primary" onClick={quit}>ほかの年度を解く</button>
+            {total.pts < total.max && <button className="btn btn-ghost" onClick={() => { quit(); setCat('weak'); }}>間違えた問題だけで解き直す（有料）</button>}
             <a className="btn btn-ghost" href="/progress/">成績表を見る</a>
           </div>
         </div>
@@ -359,38 +378,46 @@ export default function MockExam() {
     );
   }
 
-  // ---------- 条件選択 ----------
+  // ---------- 年度を選ぶ ----------
   const sel = 'px-3 py-1.5 rounded-dojo border text-sm cursor-pointer transition ';
   const on = 'bg-moss text-white border-moss';
   const off = 'bg-card border-line hover:border-ink-faint';
-  const slots = slotsOf(index);
+  const MIN = CONF.minutes;
   const weakN = index.filter((x) => needsReview(prog[x.id])).length;
-  const n = cat === 'all' ? slots.length : cat === 'weak' ? Math.min(weakN, slots.length) : slots.filter((s) => s.cat === cat).length;
-  const minutes = Math.round((CONF.minutes * n) / slots.length);
-  const allowed = (cat === 'all' || cat === 'weak' ? canFull : canCat) && n > 0;
+  const yLabel = ys.find((y) => 'y:' + y.id === cc)?.label ?? '';
+  const n = cc === 'weak' ? Math.min(weakN, FULL) : index.filter((x) => 'y:' + x.year === cc).length;
+  const minutes = Math.round((MIN * n) / FULL);
+  const allowed = (cc === 'weak' ? canFull : true) && n > 0;
   return (
     <div className="space-y-5">
       <div className="card p-5">
-        <div className="font-bold mb-2">範囲</div>
-        <div className="flex flex-wrap gap-2">
-          <button className={sel + (cat === 'all' ? on : off)} onClick={() => setCat('all')}>本番と同じ 全{slots.length}問</button>
-          {cats.map((c) => <button key={c.slug} className={sel + (cat === c.slug ? on : off)} onClick={() => setCat(c.slug)}>{c.icon} {c.name}だけ</button>)}
-          <button className={sel + (cat === 'weak' ? on : off)} onClick={() => setCat('weak')}>❗ 間違えた問題だけ（{weakN > slots.length ? `${weakN}問のうち最大${slots.length}問` : `${weakN}問`}）</button>
+        <div className="font-bold mb-2">年度を選ぶ <span className="text-sm font-normal text-ink-soft">本番と同じ時間・無料で何回でも</span></div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {ys.map((y) => { const k = index.filter((x) => x.year === y.id).length; return (
+            <button key={y.id} className={'text-left rounded-dojo border px-4 py-3 transition ' + (cc === 'y:' + y.id ? on : off)} onClick={() => setCat('y:' + y.id)}>
+              <div className="font-bold">{y.label}</div>
+              <div className="text-xs opacity-80">{k}問 ・ {Math.round((MIN * k) / FULL)}分</div>
+            </button>
+          ); })}
         </div>
-        <p className="text-xs text-ink-faint mt-3">
-          本番と同じ分野の並びで、過去問から1回分を組みます。間違えた問題・要復習の問題（いま {weakN}問）を先に入れ、足りない分を未回答、解けた問題の順に足します。
-          途中では正誤を出さず、最後にまとめて採点します。{CONF.selectNote}{CONF.countNote}
-        </p>
+        <p className="text-xs text-ink-faint mt-3">その年度の問1〜問50を順に、本番と同じ2時間で解きます。途中では正誤を出さず、最後にまとめて採点し、その年度の合格点と並べます。</p>
+        <div className="mt-5 pt-4 border-t border-line">
+          <div className="flex items-baseline gap-2 mb-1">
+            <span className="font-bold">❗ 間違えた問題だけで解き直す</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-ai-pale text-ai font-bold">有料プラン</span>
+          </div>
+          <p className="text-sm text-ink-soft mb-2">間違えた問題・要復習の問題（いま {weakN}問）を、間違えた問題を先に、その中で古い順に、最大{FULL}問まで時間を計って解き直します。</p>
+          <button className={sel + (cc === 'weak' ? on : off)} onClick={() => setCat('weak')}>これを選ぶ（{weakN > FULL ? `${weakN}問のうち最大${FULL}問` : `${weakN}問`}）</button>
+        </div>
       </div>
       <div className="card p-5 flex flex-wrap items-center gap-4">
-        <div className="serif text-3xl">{n}<span className="text-base text-ink-soft"> 問 ・ {minutes}分</span></div>
-        <button className="btn btn-primary text-lg px-8" disabled={!allowed || paid === 'checking'} onClick={begin}>始める</button>
+        <div className="serif text-2xl">{cc === 'weak' ? '間違えた問題' : yLabel}<span className="text-base text-ink-soft ml-2">{n}問 ・ {minutes}分</span></div>
+        <button className="btn btn-primary text-lg px-8" disabled={!allowed || (cc === 'weak' && paid === 'checking')} onClick={begin}>始める</button>
         <span className="text-sm text-ink-soft">
-          {paid === 'paid' ? (cat === 'weak' && n === 0 ? '間違えた問題はいまありません。' : cat === 'weak' ? `有料プラン：間違えた問題を先に、その中で古い順に ${n}問` : '有料プラン：何回でも')
-            : cat === 'weak' ? <>間違えた問題だけの回は有料プラン（月額980円）です。<a href="/ai/">有料プランを見る →</a></>
-            : cat === 'all' ? <>全{slots.length}問の回は有料プラン（月額980円）です。<a href="/ai/">有料プランを見る →</a> 無料では分野を1つ選んだ回を1回試せます。</>
-            : canCat ? '無料のお試し（1回だけ）'
-            : <>無料のお試しは使いました。<a href="/ai/">有料プランを見る →</a></>}
+          {cc !== 'weak' ? '無料で何回でも解けます'
+            : paid !== 'paid' ? <>間違えた問題だけの解き直しは有料プラン（月額980円）です。<a href="/ai/">有料プランを見る →</a></>
+            : n === 0 ? '間違えた問題はいまありません。'
+            : `有料プラン：間違えた問題を先に、その中で古い順に ${n}問`}
         </span>
       </div>
     </div>

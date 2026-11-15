@@ -22,6 +22,7 @@ const jsonLd = {
   <p class="text-ink-soft text-sm mb-4">{y.examDate}実施 ・ 全{qs.length}問</p>
   <div class="flex flex-wrap gap-2 mb-6">
     <a class="btn btn-primary" href={`/practice/?year=${y.id}`}>この年度を通しで解く</a>
+    <a class="btn btn-ghost" href={`/mogi/?year=${y.id}`}>⏱ 本番と同じ時間で解く</a>
     {y.pdf.questions && <a class="btn btn-ghost btn-sm" href={y.pdf.questions} target="_blank" rel="noopener">公式の問題・正解番号 PDF</a>}
   </div>
   <ol class="card divide-y divide-line">
