@@ -54,7 +54,7 @@ const jsonLd = {
           <thead><tr><th>分野</th><th class="text-right">問題数</th><th class="text-right">割合</th></tr></thead>
           <tbody>
             {categories.map((c) => (
-              <tr><td><a href={`/practice/?cat=${c.slug}`} class="no-underline">{c.icon} {c.name}</a></td><td class="text-right">{c.count}問</td><td class="text-right">{(c.count / total * 100).toFixed(1)}%</td></tr>
+              <tr><td><a href={`/guide/${c.slug}/`} class="no-underline">{c.icon} {c.name}</a></td><td class="text-right">{c.count}問</td><td class="text-right">{(c.count / total * 100).toFixed(1)}%</td></tr>
             ))}
           </tbody>
         </table></div></div>

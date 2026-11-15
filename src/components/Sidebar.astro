@@ -19,8 +19,7 @@ const pane = (exam: Exam) => {
     ys: ex.years.filter((y) => ex.questions.some((q) => q.year === y.id)),
     cats: categoriesOf(exam).filter((c) => c.count > 0),
     exq: exam === 'shi' ? '' : '?exam=hoshi',
-    // 分野は演習へ（分野別ガイドはまだ無い）
-    catHref: (slug: string) => `/practice/?${exam === 'shi' ? '' : 'exam=hoshi&'}cat=${slug}`,
+    catHref: (slug: string) => `/guide/${slug}/`,
   };
 };
 ---
@@ -48,7 +47,7 @@ const pane = (exam: Exam) => {
     <div class="text-xs tracking-widest text-ink-faint px-2 mt-5 mb-1">分野別</div>
     <div class="space-y-0.5">
       {cats.map((c) => (
-        <a href={catHref(c.slug)} class={'sb-link' + ''}>
+        <a href={catHref(c.slug)} class={'sb-link' + (active(`/guide/${c.slug}/`) ? ' is-active' : '')}>
           <span>{c.icon} {c.name}</span><span class="sb-count">{c.count}問</span>
         </a>
       ))}
@@ -58,6 +57,7 @@ const pane = (exam: Exam) => {
       <a href={`/progress/${exq}`} class={'sb-link' + (active('/progress/') ? ' is-active' : '')}>📈 成績表</a>
       <a href="/mogi/" class={'sb-link' + (active('/mogi/') ? ' is-active' : '')}>📝 模擬試験</a>
       <a href="/ox/" class={'sb-link' + (active('/ox/') ? ' is-active' : '')}>⭕ 一問一答（○×）</a>
+      <a href="/guide/" class={'sb-link' + (path === '/guide/' ? ' is-active' : '')}>📚 分野別ガイド一覧</a>
       <a href="/books/" class={'sb-link' + (active('/books/') ? ' is-active' : '')}>📖 おすすめ参考書</a>
       <a href="/ai/" class={'sb-link' + (active('/ai/') ? ' is-active' : '')}>🤖 AI 有料プラン</a>
     </div>

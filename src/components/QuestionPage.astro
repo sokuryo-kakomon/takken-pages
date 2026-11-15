@@ -45,6 +45,8 @@ const jsonLd = {
     {next ? <a class="btn btn-ghost flex-1" data-key="next" href={next.url}>問{next.num} →</a> : <span class="btn btn-ghost flex-1 is-disabled">次の問題 →</span>}
   </nav>
   <div class="mt-4 text-center text-sm">
+    <a href={`/guide/${q.categorySlug}/`}>📚 「{q.category}」の分野別ガイドを読む</a>
+    <span class="mx-2 text-ink-faint">｜</span>
     <a href={`/practice/?cat=${q.categorySlug}`}>「{q.category}」を通しで解く</a>
   </div>
 </App>
