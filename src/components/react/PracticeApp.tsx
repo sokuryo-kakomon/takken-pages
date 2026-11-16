@@ -3,7 +3,7 @@ import { useStore } from '@nanostores/react';
 import siteJson from '../../data/site.json';
 import type { Exam, Question, QuestionIndex, Site } from '../../lib/types';
 import { showExam } from '../../lib/examui';
-import { $progress, $bookmarks, isWeak, toggleBookmark } from '../../store/progress';
+import { $progress, $bookmarks, isWeak, needsReview, toggleBookmark } from '../../store/progress';
 import QuestionCard from './QuestionCard';
 
 // 演習画面。条件を選ぶ → 1問ずつ解く → 結果、の3画面。
@@ -12,15 +12,16 @@ import QuestionCard from './QuestionCard';
 const S = siteJson as unknown as Site;
 const EXAM_NAME: Record<Exam, string> = { shi: '宅建', hoshi: '（未使用）' };
 const yearsOf = (e: Exam) => (e === 'hoshi' ? S.hoshiYears : S.years);
-type Mode = 'order' | 'random' | 'unanswered' | 'wrong' | 'weak' | 'bookmark';
-const MODES: { v: Mode; label: string; hint: string }[] = [
-  { v: 'order', label: '出題順', hint: '年度・問番号の順に' },
-  { v: 'random', label: 'ランダム', hint: '順番を混ぜて' },
-  { v: 'unanswered', label: '未回答のみ', hint: 'まだ解いていない問題だけ' },
-  { v: 'wrong', label: '前回不正解', hint: '直近で間違えた問題だけ' },
-  { v: 'weak', label: '要復習', hint: '間違えたことがあり、まだ2回連続で正解していない' },
-  { v: 'bookmark', label: '★ 印をつけた問題', hint: '自分で要復習に入れた問題' },
-];
+type Mode = 'order' | 'random' | 'unanswered' | 'miss' | 'wrong' | 'weak' | 'bookmark';
+// 画面の札は order・random・unanswered・miss の4つと ★印の1行。
+// wrong・weak・bookmark は成績表・弱点まとめのリンク（?mode=）から来た時だけ使う。数がずれないよう絞り方は前と同じ。
+const MODE_LABEL: Record<Mode, string> = {
+  order: '最初から順に', random: 'ランダム', unanswered: 'まだ解いていない', miss: '間違えた問題',
+  wrong: '前回不正解', weak: '要復習', bookmark: '★印の問題',
+};
+const URL_MODES: Mode[] = ['order', 'random', 'unanswered', 'miss', 'wrong', 'weak', 'bookmark'];
+// 年度の短い名前（R3.12 → R3 12月）
+const shortYear = (s: string) => { const [m, sub] = s.split('.'); return sub ? `${m} ${sub}月` : m; };
 
 function shuffle<T>(a: T[]) {
   const b = a.slice();
@@ -34,6 +35,10 @@ export default function PracticeApp() {
   const [year, setYear] = useState('all');
   const [cat, setCat] = useState('all');
   const [mode, setMode] = useState<Mode>('order');
+  // ?mode=weak などで来た時の札（go=1 が無い時に一番上に出す）
+  const [fromUrl, setFromUrl] = useState<Mode | null>(null);
+  // 「条件を絞る」の開け閉め（URL で年度・分野が来た時は開いておく）
+  const [openF, setOpenF] = useState(false);
   const [session, setSession] = useState<string[] | null>(null);
   const [i, setI] = useState(0);
   const [results, setResults] = useState<Record<string, boolean>>({});
@@ -43,6 +48,7 @@ export default function PracticeApp() {
   // トップの「ランダム10問」用: ?n=10 で問題数を絞り、?go=1 で条件を選ばずにすぐ始める
   const [limit, setLimit] = useState(0);
   const autoGo = useRef(false);
+  const urlMode = useRef<Mode>('order');
   const prog = useStore($progress);
   const bms = useStore($bookmarks);
 
@@ -53,33 +59,35 @@ export default function PracticeApp() {
     if (p.get('year')) setYear(p.get('year')!);
     if (p.get('cat')) setCat(p.get('cat')!);
     const m = p.get('mode') as Mode | null;
-    if (m && MODES.some((x) => x.v === m)) setMode(m);
+    if (m && URL_MODES.includes(m)) { setMode(m); urlMode.current = m; if (m !== 'order' && m !== 'random') setFromUrl(m); }
+    if (p.get('year') || p.get('cat')) setOpenF(true);
     if (Number(p.get('n')) > 0) setLimit(Number(p.get('n')));
     autoGo.current = p.get('go') === '1';
   }, []);
 
-  const filtered = useMemo(() => {
-    if (!index) return [];
-    return index.filter((x) =>
-      x.exam === exam &&
-      (year === 'all' || x.year === year) &&
-      (cat === 'all' || x.categorySlug === cat) &&
-      (mode === 'unanswered' ? !prog[x.id]?.answered
-        : mode === 'wrong' ? !!prog[x.id]?.answered && !prog[x.id]?.correct
-        : mode === 'weak' ? isWeak(prog[x.id])
-        : mode === 'bookmark' ? bms.includes(x.id)
-        : true));
-  }, [index, exam, year, cat, mode, prog, bms]);
+  // 年度・分野で絞った問題（出し方の前）
+  const base = useMemo(() => (index ?? []).filter((x) =>
+    x.exam === exam && (year === 'all' || x.year === year) && (cat === 'all' || x.categorySlug === cat)), [index, exam, year, cat]);
+  const pick = (m: Mode) => base.filter((x) =>
+    m === 'unanswered' ? !prog[x.id]?.answered
+    : m === 'miss' ? needsReview(prog[x.id])
+    : m === 'wrong' ? !!prog[x.id]?.answered && !prog[x.id]?.correct
+    : m === 'weak' ? isWeak(prog[x.id])
+    : m === 'bookmark' ? bms.includes(x.id)
+    : true);
+  // ランダムは問題数の指定が無ければ10問
+  const sizeOf = (m: Mode, n: number) => (m === 'random' ? Math.min(limit || 10, n) : limit ? Math.min(limit, n) : n);
 
-  const start = () => {
-    let ids = filtered.map((x) => x.id);
-    if (mode === 'random') ids = shuffle(ids);
-    if (limit) ids = ids.slice(0, limit);
-    setSession(ids); setI(0); setResults({}); setFinished(false);
+  const start = (m: Mode = mode) => {
+    let ids = pick(m).map((x) => x.id);
+    if (m === 'random') ids = shuffle(ids);
+    ids = ids.slice(0, sizeOf(m, ids.length));
+    if (!ids.length) return;
+    setMode(m); setSession(ids); setI(0); setResults({}); setFinished(false);
     window.scrollTo(0, 0);
   };
   useEffect(() => {
-    if (index && autoGo.current) { autoGo.current = false; start(); }
+    if (index && autoGo.current) { autoGo.current = false; start(urlMode.current); }
   }, [index]);
   const quit = () => { setSession(null); setCur(null); setFinished(false); };
 
@@ -112,7 +120,7 @@ export default function PracticeApp() {
           <div className="serif text-5xl text-moss-deep">{correct}<span className="text-2xl text-ink-soft"> / {done.length}</span></div>
           <div className="text-ink-soft mt-1">正答率 {done.length ? Math.round((correct / done.length) * 100) : 0}%{done.length < session.length && `（${session.length}問中 ${done.length}問を解答）`}</div>
           <div className="flex flex-wrap justify-center gap-2 mt-5">
-            <button className="btn btn-primary" onClick={start}>同じ条件でもう一度</button>
+            <button className="btn btn-primary" onClick={() => start(mode)}>同じ条件でもう一度</button>
             <button className="btn btn-ghost" onClick={quit}>条件を選び直す</button>
             <a className="btn btn-ghost" href="/progress/">成績表を見る</a>
           </div>
@@ -181,41 +189,92 @@ export default function PracticeApp() {
   }
 
   // ---------- 条件選択 ----------
+  // 押せばすぐ始まる4枚。年度・分野・問題数は「条件を絞る」の中（試験は左の欄で決まる）
   const sel = 'px-3 py-1.5 rounded-dojo border text-sm cursor-pointer transition ';
   const on = 'bg-moss text-white border-moss';
   const off = 'bg-card border-line hover:border-ink-faint';
+  const title = EXAM_NAME[exam].replace(/（.*）/, '');
+  const other: Exam = exam === 'shi' ? 'hoshi' : 'shi';
+  const hasOther = index.some((x) => x.exam === other);
+  const years = yearsOf(exam).filter((y) => index.some((x) => x.exam === exam && x.year === y.id));
+  const cats = S.categories.filter((c) => index.some((x) => x.exam === exam && x.categorySlug === c.slug));
+  const yName = years.find((y) => y.id === year);
+  const cName = cats.find((c) => c.slug === cat);
+  const parts = [yName && yName.label, cName && cName.name, limit > 0 && `${limit}問ずつ`].filter(Boolean);
+  const cards: { m: Mode; icon: string; label: string; sub: string }[] = [
+    { m: 'order', icon: '▶', label: MODE_LABEL.order, sub: '年度・問番号の順に' },
+    { m: 'random', icon: '🎲', label: `ランダム${limit || 10}問`, sub: yName || cName ? '絞った中から' : 'すべての年度から' },
+    { m: 'unanswered', icon: '✏️', label: MODE_LABEL.unanswered, sub: 'はじめて解く問題' },
+    { m: 'miss', icon: '❗', label: MODE_LABEL.miss, sub: '前回不正解と要復習' },
+  ];
+  const nBm = pick('bookmark').length;
+  const nUrl = fromUrl ? sizeOf(fromUrl, pick(fromUrl).length) : 0;
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="card p-5">
-        {/* 試験が1つ（宅建だけ）のときは出さない */}
-        {index.some((x) => x.exam === 'hoshi') && <>
-        <div className="font-bold mb-2">試験</div>
-        <div className="flex flex-wrap gap-2 mb-5">
-          {(['shi', 'hoshi'] as Exam[]).filter((e) => index.some((x) => x.exam === e)).map((e) => (
-            <button key={e} className={sel + (exam === e ? on : off)} onClick={() => { setExam(e); setYear('all'); showExam(e); }}>{EXAM_NAME[e]}</button>
-          ))}
+        {/* 試験は左の欄で決まる。スマホでは左の欄が畳まれているので、ここでも切り替えられるように */}
+        {hasOther && (
+          <div className="lg:hidden flex flex-wrap items-baseline justify-between gap-2 mb-3 text-sm">
+            <span className="font-bold">{title}の問題から出します</span>
+            <button type="button" className="text-moss underline" onClick={() => { setExam(other); setYear('all'); showExam(other); }}>{EXAM_NAME[other].replace(/（.*）/, '')}に切り替える</button>
+          </div>
+        )}
+
+        {fromUrl && (
+          <button type="button" disabled={!nUrl} onClick={() => start(fromUrl)}
+            className="w-full mb-3 rounded-dojo bg-moss text-white px-4 py-3.5 text-left font-bold text-base disabled:opacity-40 disabled:cursor-not-allowed">
+            {nUrl ? `${cName ? cName.name + 'の' : ''}${MODE_LABEL[fromUrl]} ${nUrl}問を解く →` : `${cName ? cName.name + 'の' : ''}${MODE_LABEL[fromUrl]}はいまはありません`}
+          </button>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {cards.map(({ m, icon, label, sub }) => {
+            const n = sizeOf(m, pick(m).length);
+            return (
+              <button key={m} type="button" disabled={!n} onClick={() => start(m)}
+                className="flex items-center justify-between gap-3 text-left rounded-dojo border border-line bg-card px-4 py-3 transition hover:border-moss hover:bg-moss-pale disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:border-line disabled:hover:bg-card">
+                <span className="min-w-0">
+                  <b className="block text-[.95rem]">{icon} {label}</b>
+                  <span className="block text-xs text-ink-soft mt-0.5">{n ? sub : 'いまはありません'}</span>
+                </span>
+                <span className="serif text-xl font-bold text-moss-deep shrink-0">{n}<small className="text-xs text-ink-soft font-normal"> 問</small></span>
+              </button>
+            );
+          })}
         </div>
-        </>}
-        <div className="font-bold mb-2">年度</div>
-        <div className="flex flex-wrap gap-2">
-          <button className={sel + (year === 'all' ? on : off)} onClick={() => setYear('all')}>すべて</button>
-          {yearsOf(exam).filter((y) => index.some((x) => x.exam === exam && x.year === y.id)).map((y) => <button key={y.id} className={sel + (year === y.id ? on : off)} onClick={() => setYear(y.id)}>{y.label}</button>)}
-        </div>
-        <div className="font-bold mt-5 mb-2">分野</div>
-        <div className="flex flex-wrap gap-2">
-          <button className={sel + (cat === 'all' ? on : off)} onClick={() => setCat('all')}>すべて</button>
-          {S.categories.filter((c) => index.some((x) => x.exam === exam && x.categorySlug === c.slug)).map((c) => <button key={c.slug} className={sel + (cat === c.slug ? on : off)} onClick={() => setCat(c.slug)}>{c.icon} {c.name}</button>)}
-        </div>
-        <div className="font-bold mt-5 mb-2">出し方</div>
-        <div className="flex flex-wrap gap-2">
-          {MODES.map((m) => <button key={m.v} className={sel + (mode === m.v ? on : off)} title={m.hint} onClick={() => setMode(m.v)}>{m.label}</button>)}
-        </div>
-        <div className="text-xs text-ink-faint mt-1">{MODES.find((m) => m.v === mode)?.hint}</div>
-      </div>
-      <div className="card p-5 flex flex-wrap items-center gap-4">
-        <div className="serif text-3xl">{limit ? Math.min(limit, filtered.length) : filtered.length}<span className="text-base text-ink-soft"> 問</span></div>
-        <button className="btn btn-primary text-lg px-8" disabled={filtered.length === 0} onClick={start}>演習を始める</button>
-        {filtered.length === 0 && <span className="text-sm text-ink-soft">この条件に当てはまる問題はありません。</span>}
+        {nBm > 0 && fromUrl !== 'bookmark' && (
+          <button type="button" className="mt-2.5 text-sm text-ink-soft underline" onClick={() => start('bookmark')}>★印の問題を解く（{sizeOf('bookmark', nBm)}問）</button>
+        )}
+
+        <details className="mt-4 border-t border-line pt-3" open={openF} onToggle={(e) => setOpenF((e.target as HTMLDetailsElement).open)}>
+          <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer text-sm font-bold text-moss select-none">
+            {parts.length ? `条件：${parts.join('・')}` : '条件を絞る（年度・分野・問題数）'} <span className="text-xs">{openF ? '▲' : '▼'}</span>
+          </summary>
+          <div className="mt-3 space-y-3">
+            <div>
+              <div className="text-xs font-bold text-ink-soft mb-1.5">年度</div>
+              <div className="flex flex-wrap gap-1.5">
+                <button type="button" className={sel + (year === 'all' ? on : off)} onClick={() => setYear('all')}>すべて</button>
+                {years.map((y) => <button type="button" key={y.id} title={y.label} className={sel + (year === y.id ? on : off)} onClick={() => setYear(y.id)}>{shortYear(y.short)}</button>)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-ink-soft mb-1.5">分野</div>
+              <div className="flex flex-wrap gap-1.5">
+                <button type="button" className={sel + (cat === 'all' ? on : off)} onClick={() => setCat('all')}>すべて</button>
+                {cats.map((c) => <button type="button" key={c.slug} className={sel + (cat === c.slug ? on : off)} onClick={() => setCat(c.slug)}>{c.icon} {c.name}</button>)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-ink-soft mb-1.5">1回の問題数</div>
+              <div className="flex flex-wrap gap-1.5">
+                {[0, 10, 20, 30].map((n) => <button type="button" key={n} className={sel + (limit === n ? on : off)} onClick={() => setLimit(n)}>{n ? `${n}問` : '指定なし'}</button>)}
+              </div>
+              <div className="text-xs text-ink-faint mt-1">指定なしの時、ランダムは10問・ほかは当てはまる問題を全部出します。</div>
+            </div>
+          </div>
+        </details>
+        {base.length === 0 && <p className="text-sm text-ink-soft mt-3">この条件に当てはまる問題はありません。</p>}
       </div>
     </div>
   );
