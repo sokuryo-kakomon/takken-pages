@@ -278,7 +278,7 @@ export default function PracticeApp() {
               </div>
               <div className="text-xs text-ink-faint mt-1">指定なしの時、ランダムは10問・ほかは当てはまる問題を全部出します。</div>
             </div>
-            <button type="button" className="btn btn-primary" disabled={!sizeOf('order', base.length)} onClick={() => start('order')}>この条件で順に解く（{sizeOf('order', base.length)}問）</button>
+            {(() => { const m: Mode = fromUrl ?? 'order'; const k = sizeOf(m, pick(m).length); return <button type="button" className="btn btn-primary" disabled={!k} onClick={() => start(m)}>{fromUrl ? `この条件の${MODE_LABEL[m]}を解く` : 'この条件で順に解く'}（{k}問）</button>; })()}
           </div>
         </details>
         {base.length === 0 && <p className="text-sm text-ink-soft mt-3">この条件に当てはまる問題はありません。</p>}

@@ -113,6 +113,8 @@
   .choice.is-picked { border-color: var(--color-ai); background: var(--color-ai-pale); box-shadow: 0 0 0 2px var(--color-ai); font-weight: 700; }
   .choice.is-picked .mark { background: var(--color-ai); border-color: var(--color-ai); color: #fff; }
   .choice.is-muted { opacity: .55; }
+  /* 模擬試験を解いている間は、下の案内を出さない（押し間違えて試験から出ないように） */
+  html[data-mogi] .kokono-banner { display: none !important; }
   .choice-combo { width: auto; display: inline-flex; padding: .55rem .9rem; margin: .35rem .6rem .35rem 0; }
   .choice-num { width: 3.2rem; justify-content: center; font-family: var(--font-serif); font-size: 1.2rem; }
 

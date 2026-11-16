@@ -127,6 +127,12 @@ export default function MockExam() {
       else if (saved) localStorage.removeItem(KEY);
     } catch { /* 無ければ新しく */ }
   }, []);
+  // 解いている間だけ印を付ける（下の案内を隠す）
+  useEffect(() => {
+    const on = !!run && !graded;
+    if (on) document.documentElement.dataset.mogi = ''; else delete document.documentElement.dataset.mogi;
+    return () => { delete document.documentElement.dataset.mogi; };
+  }, [run, graded]);
   useEffect(() => { if (run && !graded) try { localStorage.setItem(KEY, JSON.stringify(run)); } catch { /* 保存できなくても続けられる */ } }, [run, graded]);
   useEffect(() => {
     if (!run || graded) return;
@@ -282,22 +288,24 @@ export default function MockExam() {
     const picked = run.answers[id];
     const kd = q ? kindOf(q) : 'choice';
     const tash = (picked && typeof picked === 'object') ? picked : {};
+    // 次へ・番号を押したら、ページの頭でなく問題の頭へ（上の帯の下）
+    const toQ = () => setTimeout(() => { const el = document.getElementById('mogi-q'); if (el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 130); }, 0);
     return (
       <div className="space-y-4">
         <div className="card px-3 py-2 md:px-4 md:py-3 flex items-center gap-3 text-sm sticky top-14 md:top-16 z-10">
           <span className="serif text-lg">{i + 1} <span className="text-ink-faint text-sm">/ {run.ids.length}</span></span>
-          <span className="text-ink-soft hidden sm:inline">解答済み {n}</span>
+          <span className="text-ink-soft text-xs leading-tight">{run.cat === 'weak' ? '間違えた問題' : ys.find((y) => 'y:' + y.id === run.cat)?.label}<span className="hidden sm:inline">・解答済み {n}</span></span>
           <span className={'ml-auto font-mono text-base ' + (remain < 600 ? 'text-shu font-bold' : '')}>残り {fmt(remain)}</span>
           <button type="button" className="btn btn-primary btn-sm" onClick={() => { if (n === run.ids.length || confirm(`まだ ${run.ids.length - n}問 答えていません。採点しますか？`)) grade(); }}>採点する</button>
         </div>
         <div className="flex flex-wrap gap-1">
           {run.ids.map((x, k) => (
-            <button key={x} type="button" onClick={() => { setI(k); window.scrollTo(0, 0); }}
+            <button key={x} type="button" onClick={() => { setI(k); toQ(); }}
               className={'w-8 h-8 text-xs rounded-dojo border ' + (k === i ? 'border-moss font-bold ' : 'border-line ') + (answered(qs[x], run.answers[x]) ? 'bg-moss text-white border-moss' : 'bg-card')}>{k + 1}</button>
           ))}
         </div>
         {q ? (
-          <article className="card p-5 md:p-7">
+          <article id="mogi-q" className="card p-5 md:p-7">
             <div className="text-xs text-ink-faint mb-2">第{i + 1}問 ・ {q.categoryIcon} {q.category}{kd === 'tashi' ? '（多肢選択式）' : kd === 'kijutsu' ? '（記述式）' : ''}（出典は採点のあとに出ます）</div>
             <div className="qhtml">
               <p className="text-[1.04rem]" dangerouslySetInnerHTML={{ __html: q.statementHtml }} />
@@ -365,8 +373,8 @@ export default function MockExam() {
           </article>
         ) : <div className="card p-6 text-ink-soft">読み込み中…</div>}
         <div className="flex justify-between gap-3">
-          <button type="button" className="btn btn-ghost flex-1" disabled={i === 0} onClick={() => { setI(i - 1); window.scrollTo(0, 0); }}>← 前の問題</button>
-          <button type="button" className="btn btn-ghost flex-1" disabled={i === run.ids.length - 1} onClick={() => { setI(i + 1); window.scrollTo(0, 0); }}>次の問題 →</button>
+          <button type="button" className="btn btn-ghost flex-1" disabled={i === 0} onClick={() => { setI(i - 1); toQ(); }}>← 前の問題</button>
+          <button type="button" className="btn btn-primary flex-1" disabled={i === run.ids.length - 1} onClick={() => { setI(i + 1); toQ(); }}>次の問題 →</button>
         </div>
         <div className="text-center"><button type="button" className="text-xs text-ink-faint underline" onClick={() => { if (confirm('この回をやめます（記録には残りません）。')) quit(); }}>この回をやめる</button></div>
       </div>
