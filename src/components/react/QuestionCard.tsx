@@ -219,8 +219,9 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered, mo
           <div className="qhtml" dangerouslySetInnerHTML={explHtml} />
         </div>
         {!revealed && (
-          <div className="expl-veil">
-            <button type="button" className="btn btn-ghost bg-card" onClick={() => setRevealed(true)}>解答せずに解説を読む</button>
+          <div className="expl-open no-print">
+            <p className="text-sm text-ink-soft mb-2">{q.category}の問題です。選ぶと、正答と解説（各肢の当否と根拠）が開きます。</p>
+            <button type="button" className="btn btn-ghost bg-card" onClick={() => setRevealed(true)}>答えずに解答と解説を見る ▼</button>
           </div>
         )}
         {revealed && <div className="mt-4 no-print"><AiExplainButton q={q} /></div>}

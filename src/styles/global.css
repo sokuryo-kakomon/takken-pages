@@ -121,9 +121,8 @@
   .choice-body { display: flex; align-items: flex-start; min-width: 0; }
   .choice-num { width: 3.2rem; justify-content: center; font-family: var(--font-serif); font-size: 1.2rem; }
 
-  /* ---------- 解説の覆い（解答前は読めないようにぼかす。DOM には入っている） ---------- */
-  .expl-veiled .expl-body { filter: blur(6px); max-height: 11rem; overflow: hidden; pointer-events: none; user-select: none; }
-  .expl-veil { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, rgba(253,250,242,.2), rgba(253,250,242,.95)); }
+  /* ---------- 解説は解答前はたたむ（ぼかさない。中身は初めから HTML にあり、開けばふつうの字） ---------- */
+  .expl-veiled .expl-body { display: none; }
 
   /* ---------- 一覧の正誤マーク（ListStatus が data-status を付ける） ---------- */
   [data-qid] .mark-st::before { content: "－"; color: var(--color-ink-faint); font-weight: 800; }
@@ -170,7 +169,7 @@
   .modal-x:hover { color: var(--color-ink); }
 
   /* ---------- 印刷 ---------- */
-  @media print { .no-print { display: none !important; } .expl-veiled .expl-body { filter: none; max-height: none; } }
+  @media print { .no-print { display: none !important; } .expl-veiled .expl-body { display: block; } }
 }
 
 /* 本文の幅。ヘッダーの「幅」で狭くできる（その人のブラウザに覚える） */
