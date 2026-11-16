@@ -130,6 +130,7 @@ export default function PracticeApp() {
             <button className="btn btn-ghost" onClick={quit}>条件を選び直す</button>
             <a className="btn btn-ghost" href="/progress/">成績表を見る</a>
           </div>
+          {(mode === 'miss' || mode === 'weak') && <p className="text-xs text-ink-soft mt-3">2回続けて正解すると、間違えた問題から外れます。</p>}
         </div>
         {byCat.length > 0 && (
           <div className="card p-5">
@@ -278,7 +279,7 @@ export default function PracticeApp() {
               </div>
               <div className="text-xs text-ink-faint mt-1">指定なしの時、ランダムは10問・ほかは当てはまる問題を全部出します。</div>
             </div>
-            {(() => { const m: Mode = fromUrl ?? 'order'; const k = sizeOf(m, pick(m).length); return <button type="button" className="btn btn-primary" disabled={!k} onClick={() => start(m)}>{fromUrl ? `この条件の${MODE_LABEL[m]}を解く` : 'この条件で順に解く'}（{k}問）</button>; })()}
+            {(() => { const m: Mode = fromUrl ?? 'order'; const k = sizeOf(m, pick(m).length); return <button type="button" className="btn btn-primary" disabled={!k} onClick={() => start(m)}>{fromUrl ? `この条件の${MODE_LABEL[m]} ${k}問を解く` : `この条件の全${k}問を順に解く`}</button>; })()}
           </div>
         </details>
         {base.length === 0 && <p className="text-sm text-ink-soft mt-3">この条件に当てはまる問題はありません。</p>}

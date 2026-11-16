@@ -116,6 +116,9 @@
   /* 模擬試験を解いている間は、下の案内を出さない（押し間違えて試験から出ないように） */
   html[data-mogi] .kokono-banner { display: none !important; }
   .choice-combo { width: auto; display: inline-flex; padding: .55rem .9rem; margin: .35rem .6rem .35rem 0; }
+  /* 選択肢の番号は丸い札にして値と離す（「1. 4 mm」が「1.4 mm」と小数に読まれるため） */
+  .choice-no { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; margin: .1rem .55rem 0 0; border-radius: 50%; background: var(--color-paper-deep, #ece6d8); color: var(--color-ink); font-size: .85rem; font-weight: 800; line-height: 1; vertical-align: top; font-family: var(--font-sans, inherit); }
+  .choice-body { display: flex; align-items: flex-start; min-width: 0; }
   .choice-num { width: 3.2rem; justify-content: center; font-family: var(--font-serif); font-size: 1.2rem; }
 
   /* ---------- 解説の覆い（解答前は読めないようにぼかす。DOM には入っている） ---------- */

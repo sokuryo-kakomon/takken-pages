@@ -24,10 +24,10 @@ import { pageTitle, SITE_NAME } from '../../lib/data';
       <table>
         <tr><th></th><th>無料</th><th>有料プラン</th></tr>
         <tr><td>料金</td><td>0円</td><td>月額 980円（税込）・毎月自動更新</td></tr>
-        <tr><td>AI に質問</td><td>1日2回</td><td>1日15回・1か月90回まで</td></tr>
+        <tr><td>AI に質問</td><td>1日2回</td><td>1日15回まで（1か月の合計は90回まで）</td></tr>
         <tr><td>答える AI</td><td>標準（Claude Sonnet）</td><td><b>最上位（Claude Opus）</b></td></tr>
         <tr><td>弱点まとめ（成績表）</td><td>—</td><td>使える</td></tr>
-        <tr><td>AI の弱点分析</td><td>—</td><td>使える（AI に質問と合わせて1日15回・1か月90回）</td></tr>
+        <tr><td>AI の弱点分析</td><td>—</td><td>使える（AI に質問と合わせて1日15回まで・1か月の合計は90回まで）</td></tr>
         <tr><td>模擬試験（年度ごと・時間つき）</td><td colspan="2"><b>どちらも何回でも</b></td></tr>
         <tr><td>間違えた問題の解き直し（演習・模擬試験）</td><td colspan="2"><b>どちらも何回でも</b></td></tr>
         <tr><td>一問一答</td><td colspan="2">どちらも回数の制限なし</td></tr>
@@ -35,7 +35,7 @@ import { pageTitle, SITE_NAME } from '../../lib/data';
       </table>
       <p class="text-sm">この有料プランは{SITE_NAME}専用です（姉妹サイトの過去問ドリルとは別の契約です）。無料の質問は、混み合った日は早めに締め切ることがあります。</p>
       <h2 class="text-lg">やめ方</h2>
-      <p class="text-sm">申し込むと、このページの下に「契約の確認・カード変更・解約」のボタンが出ます（利用コードを入れた端末で）。押すと決済の Stripe の画面が開き、そこでいつでも解約できます。解約しても、支払い済みの期間の終わりまでは使えます。日割りの返金はありません。</p>
+      <p class="text-sm">申し込むと、このページの下に「契約の確認・カード変更・解約」のボタンが出ます（利用コードを入れた端末で）。押すと決済の Stripe の画面が開き、そこでいつでも解約できます。解約しても、支払い済みの期間の終わりまでは使えます。日割りの返金はありません。端末を替えた・利用コードが分からない等でうまくいかない時は、info@kokonotoukibo.jp へご連絡ください（解約の手続きをします）。</p>
     </div>
     <AiPlan client:only="react" />
   </main>

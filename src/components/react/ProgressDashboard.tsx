@@ -16,7 +16,7 @@ function Row({ label, s, href, weakHref }: { label: string; s: ReturnType<typeof
     <div className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[11rem_1fr_13rem_5rem] items-center gap-x-3 gap-y-1 text-sm py-1.5">
       <a href={href} className="order-1 md:order-none no-underline text-ink hover:underline truncate">{label}</a>
       <div className="order-3 md:order-none col-span-2 md:col-span-1 bar" title={`解いた割合 ${s.coverage}%`}><i style={{ width: s.coverage + '%' }} /></div>
-      <span className="order-2 md:order-none text-ink-soft text-right">解いた {s.answered}/{s.total}問 ・ 正答率 {s.rate}%</span>
+      <span className="order-2 md:order-none text-ink-soft text-right">解いた {s.answered}/{s.total}問 ・ 正答率 {s.answered ? `${s.rate}%` : '—'}</span>
       {weak && <span className="order-4 md:order-none col-span-2 md:col-span-1 text-right -mt-0.5 md:mt-0">{weak}</span>}
     </div>
   );
@@ -69,7 +69,7 @@ export default function ProgressDashboard() {
       <div className="card p-6">
         <div className="flex flex-wrap items-end gap-6">
           <div><div className="text-xs text-ink-soft">解答済み</div><div className="serif text-4xl">{all.answered}<span className="text-lg text-ink-soft"> / {all.total}問</span></div></div>
-          <div><div className="text-xs text-ink-soft">正答率</div><div className="serif text-4xl text-moss-deep">{all.rate}<span className="text-lg">%</span></div></div>
+          <div><div className="text-xs text-ink-soft">正答率</div><div className="serif text-4xl text-moss-deep">{all.answered ? <>{all.rate}<span className="text-lg">%</span></> : '—'}</div></div>
           <div><div className="text-xs text-ink-soft">要復習</div><div className="serif text-4xl text-shu">{all.weak}<span className="text-lg">問</span></div></div>
           <div title={st.n > 0 && !st.today ? '今日解くと続きます' : undefined}><div className="text-xs text-ink-soft">連続</div><div className="serif text-4xl text-moss-deep">{st.n}<span className="text-lg">日</span></div></div>
           <div className="ml-auto flex gap-2">
@@ -78,6 +78,7 @@ export default function ProgressDashboard() {
           </div>
         </div>
         <div className="bar mt-4"><i style={{ width: all.coverage + '%' }} /></div>
+        <p className="text-xs text-ink-faint mt-2">正答率＝各問題の最後の答えで数えます ／ 要復習＝間違えた問題は、2回続けて正解するまで残ります</p>
       </div>
 
       <div className="card p-5">

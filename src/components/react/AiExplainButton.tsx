@@ -257,12 +257,14 @@ function CopyPrompt({ q }: { q: Question }) {
 export default function AiExplainButton({ q }: { q: Question }) {
   const [open, setOpen] = useState(false);
   const [wide, setWide] = useState(false);
+  const code = useStore($aiCode);
   const wideStyle = wide ? { maxWidth: 'none', width: '100%', height: '100%', maxHeight: 'none', display: 'flex', flexDirection: 'column' as const } : undefined;
   return (
     <>
       <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(true)}>
         🤖 AI に質問{!ENDPOINT && <span className="text-xs text-ink-faint ml-1">（準備中）</span>}
       </button>
+      {ENDPOINT && !code && <span className="ml-2 text-xs text-ink-faint">無料は1日2回</span>}
       {open && (
         <div className="modal-bg" style={wide ? { padding: 0 } : undefined} onClick={() => setOpen(false)}>
           <div className="modal" style={wideStyle} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

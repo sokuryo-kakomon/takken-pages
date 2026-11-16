@@ -29,7 +29,17 @@ type Kind = 'choice' | 'tashi' | 'kijutsu';
 interface Slim { id: string; year: string; num: number; cat: string; kind: Kind }
 interface Slot { cat: string; kind: Kind; num: number }
 type Ans = number | Record<string, number> | string;
-interface Run { cat: string; ids: string[]; answers: Record<string, Ans>; self: Record<string, number>; start: number; limit: number }
+interface Run { cat: string; ids: string[]; answers: Record<string, Ans>; self: Record<string, number>; start: number; limit: number; last?: number }
+// 答えが入っているか（本文を読み込む前でも使える形で）
+const hasAns = (a: Ans | undefined) => a !== undefined && (typeof a === 'number' || (typeof a === 'string' ? a.trim().length > 0 : Object.keys(a).length > 0));
+// 続きから開く問題：最後に答えた問題の次。そこが答え済み・最後を越える時は最初の未回答（全部答えていれば最後に答えた問題）
+function resumeAt(r: Run) {
+  const firstOpen = r.ids.findIndex((id) => !hasAns(r.answers[id]));
+  if (r.last == null) return Math.max(0, firstOpen);
+  const nx = r.last + 1;
+  if (nx < r.ids.length && !hasAns(r.answers[r.ids[nx]])) return nx;
+  return firstOpen >= 0 ? firstOpen : r.last;
+}
 
 const kindOf = (q: Question): Kind => ((q as { kind?: Kind }).kind ?? 'choice');
 const blanksOf = (q: Question) => ((q as { blanks?: Record<string, number> }).blanks ?? {});
@@ -156,7 +166,7 @@ export default function MockExam() {
   const ys = S.years.filter((y) => index.some((x) => x.year === y.id));
   // 選んでいる物（年度が未選択なら最新の年度）
   const cc = cat === 'weak' || (cat.startsWith('y:') && ys.some((y) => 'y:' + y.id === cat)) ? cat : 'y:' + ys[0].id;
-  const resume = (r: Run) => { setPending(null); setRun(r); setI(0); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0); };
+  const resume = (r: Run) => { setPending(null); setRun(r); setI(resumeAt(r)); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0); };
   const leftOf = (r: Run) => Math.max(0, Math.round((r.start + r.limit * 1000 - Date.now()) / 1000));
   const begin = () => {
     setPending(null);
@@ -290,26 +300,31 @@ export default function MockExam() {
     const id = run.ids[i];
     const q = qs[id];
     const n = run.ids.filter((x) => answered(qs[x], run.answers[x])).length;
-    const set = (v: Ans) => setRun({ ...run, answers: { ...run.answers, [id]: v } });
+    const set = (v: Ans) => setRun({ ...run, answers: { ...run.answers, [id]: v }, last: i });
     const picked = run.answers[id];
     const kd = q ? kindOf(q) : 'choice';
     const tash = (picked && typeof picked === 'object') ? picked : {};
     // 次へ・番号を押したら、ページの頭でなく問題の頭へ（上の帯の下）
     const toQ = () => setTimeout(() => { const el = document.getElementById('mogi-q'); if (el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 130); }, 0);
+    const numBtns = (after?: () => void) => run.ids.map((x, k) => (
+      <button key={x} type="button" onClick={() => { setI(k); after?.(); toQ(); }} aria-label={`第${k + 1}問${answered(qs[x], run.answers[x]) ? '（解答済み）' : ''}`}
+        className={'min-w-10 h-10 px-1 text-sm rounded-dojo border ' + (k === i ? 'border-moss font-bold ' : 'border-line ') + (answered(qs[x], run.answers[x]) ? 'bg-moss text-white border-moss' : 'bg-card')}>{k + 1}</button>
+    ));
     return (
       <div className="space-y-4">
         <div className="card px-3 py-2 md:px-4 md:py-3 flex items-center gap-3 text-sm sticky top-14 md:top-16 z-10">
-          <span className="serif text-lg">{i + 1} <span className="text-ink-faint text-sm">/ {run.ids.length}</span></span>
+          <span className="serif text-lg whitespace-nowrap">{i + 1} <span className="text-ink-faint text-sm">/ {run.ids.length}</span></span>
           <span className="text-ink-soft text-xs leading-tight">{run.cat === 'weak' ? '間違えた問題' : ys.find((y) => 'y:' + y.id === run.cat)?.label}<span className="hidden sm:inline">・解答済み {n}</span></span>
-          <span className={'ml-auto font-mono text-base ' + (remain < 600 ? 'text-shu font-bold' : '')}>残り {fmt(remain)}</span>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => { if (n === run.ids.length || confirm(`まだ ${run.ids.length - n}問 答えていません。採点しますか？`)) grade(); }}>採点する</button>
+          <span className={'ml-auto font-mono text-base whitespace-nowrap ' + (remain < 600 ? 'text-shu font-bold' : '')}>残り {fmt(remain)}</span>
+          <button type="button" className="btn btn-primary btn-sm whitespace-nowrap shrink-0" onClick={() => { if (n === run.ids.length || confirm(`まだ ${run.ids.length - n}問 答えていません。採点しますか？`)) grade(); }}>採点する</button>
         </div>
-        <div className="flex flex-wrap gap-1">
-          {run.ids.map((x, k) => (
-            <button key={x} type="button" onClick={() => { setI(k); toQ(); }}
-              className={'min-w-10 h-10 px-1 text-sm rounded-dojo border ' + (k === i ? 'border-moss font-bold ' : 'border-line ') + (answered(qs[x], run.answers[x]) ? 'bg-moss text-white border-moss' : 'bg-card')}>{k + 1}</button>
-          ))}
-        </div>
+        <p className="text-xs text-ink-faint -mt-2">⏱ 閉じている間も時間は進みます</p>
+        {/* 番号の一覧：スマホでは畳む（何段もの番号が第1問を押し下げるため）。広い画面は今のまま並べる */}
+        <details className="md:hidden card px-3 py-2" id="mogi-nums">
+          <summary className="cursor-pointer text-sm font-bold text-moss select-none">問題の一覧（解答済み {n}/{run.ids.length}）</summary>
+          <div className="flex flex-wrap gap-1 mt-2">{numBtns(() => { const d = document.getElementById('mogi-nums') as HTMLDetailsElement | null; if (d) d.open = false; })}</div>
+        </details>
+        <div className="hidden md:flex flex-wrap gap-1">{numBtns()}</div>
         {q ? (
           <article id="mogi-q" className="card p-5 md:p-7">
             <div className="text-xs text-ink-faint mb-2">第{i + 1}問 ・ {q.categoryIcon} {q.category}{kd === 'tashi' ? '（多肢選択式）' : kd === 'kijutsu' ? '（記述式）' : ''}（出典は採点のあとに出ます）</div>
@@ -329,17 +344,17 @@ export default function MockExam() {
             </div>
             <div className="mt-4">
               {kd === 'choice' && q.choiceStyle === 'sentence' && q.choices.map((c) => (
-                <button key={c.key} type="button" className="choice" style={picked === c.value ? PICKED : undefined} onClick={() => set(c.value)}>
+                <button key={c.key} type="button" className="choice" style={picked === c.value ? PICKED : undefined} onClick={() => set(c.value)} aria-label={`選択肢${c.key}：${c.text}`} aria-pressed={picked === c.value}>
                   <span className="mark">{picked === c.value ? '●' : ''}</span>
-                  <span><b className="mr-1">{c.key}．</b><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
+                  <span className="choice-body"><span className="choice-no" aria-hidden="true">{c.key}</span><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
                 </button>
               ))}
               {kd === 'choice' && q.choiceStyle === 'combo' && (
                 <div className="flex flex-wrap">
                   {q.choices.map((c) => (
-                    <button key={c.key} type="button" className="choice choice-combo" style={picked === c.value ? PICKED : undefined} onClick={() => set(c.value)}>
+                    <button key={c.key} type="button" className="choice choice-combo" style={picked === c.value ? PICKED : undefined} onClick={() => set(c.value)} aria-label={`選択肢${c.key}：${c.text}`} aria-pressed={picked === c.value}>
                       <span className="mark">{picked === c.value ? '●' : ''}</span>
-                      <span><b className="mr-1">{c.key}.</b><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
+                      <span className="choice-body"><span className="choice-no" aria-hidden="true">{c.key}</span><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
                     </button>
                   ))}
                 </div>
@@ -382,7 +397,7 @@ export default function MockExam() {
           <button type="button" className="btn btn-ghost flex-1" disabled={i === 0} onClick={() => { setI(i - 1); toQ(); }}>← 前の問題</button>
           <button type="button" className="btn btn-primary flex-1" disabled={i === run.ids.length - 1} onClick={() => { setI(i + 1); toQ(); }}>次の問題 →</button>
         </div>
-        <div className="text-center"><button type="button" className="text-xs text-ink-faint underline" onClick={() => { if (confirm('この回をやめます（記録には残りません）。')) quit(); }}>この回をやめる</button></div>
+        <div className="text-center"><button type="button" className="btn btn-ghost btn-sm min-h-10 text-ink-soft" onClick={() => { if (confirm('この回をやめます（記録には残りません）。')) quit(); }}>この回をやめる</button></div>
       </div>
     );
   }
@@ -404,6 +419,7 @@ export default function MockExam() {
         <div className="card p-5 border-2 border-moss">
           <div className="font-bold text-lg mb-1">前回の続きがあります</div>
           <p className="text-[.95rem] mb-3">{pend.cat === 'weak' ? '間違えた問題' : ys.find((y) => 'y:' + y.id === pend.cat)?.label} ・ 解答済み {k}/{pend.ids.length}問 ・ {left > 0 ? `残り ${Math.floor(left / 3600)}:${String(Math.floor((left % 3600) / 60)).padStart(2, '0')}` : '時間切れ（開くと採点します）'}</p>
+          <p className="text-xs text-ink-faint -mt-2 mb-3">⏱ 閉じている間も時間は進みます。続きは、最後に答えた問題の次から開きます。</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn btn-primary text-base px-6" onClick={() => resume(pend)}>続きから解く</button>
             <button type="button" className="btn btn-ghost" onClick={() => { if (confirm('前回の回をやめて、選び直します（記録には残りません）。')) { quit(); setPending(null); } }}>やめて選び直す</button>
@@ -425,6 +441,7 @@ export default function MockExam() {
             <div className="text-xs opacity-80">間違えた問題・要復習（いま {weakN}問）を、間違えた問題を先に、古い順に最大{FULL}問</div>
           </button>
         </div>
+        <p className="text-xs text-ink-soft mt-2">{cc === 'weak' ? '選んだら、下の「間違えた問題を始める」を押します。' : `年度を選んで、下の「${yLabel}を始める」を押します。`}</p>
         <div className="sticky bottom-0 -mx-5 -mb-5 mt-4 px-5 py-3 bg-card/95 backdrop-blur border-t border-line rounded-b-dojo flex flex-wrap items-center gap-3">
           <button type="button" className="btn btn-primary text-base px-6 flex-1 sm:flex-none" disabled={n === 0} onClick={begin}>
             {cc === 'weak' ? '間違えた問題' : yLabel}を始める（{n}問・{minutes}分）

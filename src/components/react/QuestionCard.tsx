@@ -26,11 +26,13 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
   const [mounted, setMounted] = useState(false);
   const [law, setLaw] = useState<LawCard | null>(null);
   const [zoom, setZoom] = useState<string | null>(null);
-  const prog = useStore($progress);
   const bms = useStore($bookmarks);
   const explRef = useRef<HTMLDivElement>(null);
   const resRef = useRef<HTMLDivElement>(null);
-  const prev = mounted ? prog[q.id] : undefined;
+  // 「前回」は開いた時にあった記録だけ（この画面で答えた分は「前回」と呼ばない）
+  const [initPrev, setInitPrev] = useState<Rec | undefined>(undefined);
+  const [answeredHere, setAnsweredHere] = useState(false);
+  const prev = mounted && !answeredHere ? initPrev : undefined;
   const marked = mounted && bms.includes(q.id);
   // React 19 は dangerouslySetInnerHTML のオブジェクトが別物になるたびに innerHTML を
   // 書き直す。解説は linkify で DOM を書き換えるので、オブジェクトを固定して再描画で
@@ -44,7 +46,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
   const stmtHtml = useMemo(() => ({ __html: q.statementHtml }), [q.statementHtml]);
 
   useEffect(() => { setMounted(true); }, []);
-  useEffect(() => { setPicked(null); setRevealed(false); }, [q.id]);
+  useEffect(() => { setPicked(null); setRevealed(false); setAnsweredHere(false); setInitPrev($progress.get()[q.id]); }, [q.id]);
   useEffect(() => {
     if (explRef.current) linkifyLawRefs(explRef.current, lawRefs, (h) => setLaw(resolveLaw(lawRefs, h)), lawRefs.defaults?.[q.categorySlug]);
   }, [q.id, lawRefs]);
@@ -90,6 +92,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
     if (answered) return;
     setPicked(v);
     setRevealed(true);
+    setAnsweredHere(true);
     const rec = recordAnswer(q.id, v, q.answer, accepted);
     onAnswered?.(isOk(v), rec);
   };
@@ -149,17 +152,17 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
       <div className="mt-4">
         <div className="text-sm font-bold text-moss-deep mb-1">👇 解答を選ぶ<span className="hidden md:inline font-normal text-xs text-ink-faint ml-2">キー 1〜4 で選択・Enter で次へ</span></div>
         {q.choiceStyle === 'sentence' && q.choices.map((c) => (
-          <button key={c.key} type="button" className={cls(c.value)} disabled={answered} onClick={() => pick(c.value)}>
+          <button key={c.key} type="button" className={cls(c.value)} disabled={answered} onClick={() => pick(c.value)} aria-label={`選択肢${c.key}：${c.text}`}>
             <span className="mark">{markText(c.value)}</span>
-            <span><b className="mr-1">{c.key}．</b><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
+            <span className="choice-body"><span className="choice-no" aria-hidden="true">{c.key}</span><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
           </button>
         ))}
         {q.choiceStyle === 'combo' && (
           <div className="flex flex-wrap">
             {q.choices.map((c) => (
-              <button key={c.key} type="button" className={cls(c.value, ' choice-combo')} disabled={answered} onClick={() => pick(c.value)}>
+              <button key={c.key} type="button" className={cls(c.value, ' choice-combo')} disabled={answered} onClick={() => pick(c.value)} aria-label={`選択肢${c.key}：${c.text}`}>
                 <span className="mark">{markText(c.value)}</span>
-                <span><b className="mr-1">{c.key}.</b><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
+                <span className="choice-body"><span className="choice-no" aria-hidden="true">{c.key}</span><span dangerouslySetInnerHTML={{ __html: c.html }} /></span>
               </button>
             ))}
           </div>
@@ -194,6 +197,8 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
             className="mt-2 max-w-full h-auto border border-line rounded-dojo bg-white cursor-zoom-in" onClick={() => setZoom(q.figure!.src)} />
         </details>
       )}
+
+      {!revealed && <p className="mt-4 text-xs text-ink-faint no-print">🤖 答えると、解説の下で AI に質問できます（無料は1日2回）</p>}
 
       {notice && <div className="qhtml mt-4"><div className="notice">{notice}</div></div>}
 
