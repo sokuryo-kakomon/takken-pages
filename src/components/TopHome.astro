@@ -22,6 +22,7 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
       <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
         <a href={`/practice/${exam === 'shi' ? '' : '?exam=hoshi'}`} class="btn btn-primary text-lg px-8 py-3">演習を始める</a>
         <a href="#" id="resume" class="text-ink-soft no-underline hover:text-moss" hidden>続きから ›</a>
+        <a href={`/practice/?${exq}mode=miss&go=1`} id="miss" class="text-shu font-bold no-underline hover:underline" hidden>間違えた問題を解く ›</a>
       </div>
       <p class="text-sm text-ink-soft mt-4" id="countdown" title="例年の日程（10月第3日曜）からの推定"></p>
       <a href="#about" class="lg:hidden inline-block mt-3 text-xs text-ink-soft no-underline">つかい方・解説について ↓</a>
@@ -99,5 +100,18 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
       a.textContent = n < 50 ? `続きから ${yr} 問${n + 1} ›` : `続きから ${yr} ›`;
       a.hidden = false;
     }
+  } catch (e) { /* 記録が読めなければ出さない */ }
+
+  // 間違えた問題（前回不正解・要復習）がある時だけ出す。演習の「間違えた問題」と同じ数え方
+  try {
+    const prog = JSON.parse(localStorage.getItem('takken_q_v1') || '{}');
+    const hoshi = location.pathname.startsWith('/hoshi');
+    let n = 0;
+    for (const [id, r] of Object.entries(prog)) {
+      if (id.startsWith('h-') !== hoshi || !r) continue;
+      if ((r.answered && !r.correct) || (r.ngCount > 0 && r.okStreak < 2)) n++;
+    }
+    const a = document.getElementById('miss');
+    if (n > 0 && a) { a.textContent = `間違えた問題 ${n}問を解く ›`; a.hidden = false; }
   } catch (e) { /* 記録が読めなければ出さない */ }
 </script>
