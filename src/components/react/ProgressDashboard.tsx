@@ -9,13 +9,15 @@ import { $progress, $bookmarks, $days, isWeak, resetProgress, streak, summarize 
 
 const S = siteJson as unknown as Site;
 
-function Row({ label, s, href }: { label: string; s: ReturnType<typeof summarize>; href: string }) {
+function Row({ label, s, href, weakHref }: { label: string; s: ReturnType<typeof summarize>; href: string; weakHref: string }) {
+  // 「14/26問 ・ 86%」は「26問中14問正解」に読まれるので、何の数かを書く。要復習は押すとその分だけ解き直せる
+  const weak = s.weak > 0 && <a href={weakHref} className="text-xs text-shu underline">要復習 {s.weak}</a>;
   return (
-    <div className="grid grid-cols-[9rem_1fr_7rem] md:grid-cols-[11rem_1fr_9rem_6rem] items-center gap-3 text-sm py-1.5">
-      <a href={href} className="no-underline text-ink hover:underline truncate">{label}</a>
-      <div className="bar" title={`解答済み ${s.coverage}%`}><i style={{ width: s.coverage + '%' }} /></div>
-      <span className="text-ink-soft text-right">{s.answered}/{s.total}問 ・ {s.rate}%</span>
-      <span className="hidden md:inline text-right text-xs text-shu">{s.weak > 0 ? `要復習 ${s.weak}` : ''}</span>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[11rem_1fr_13rem_5rem] items-center gap-x-3 gap-y-1 text-sm py-1.5">
+      <a href={href} className="order-1 md:order-none no-underline text-ink hover:underline truncate">{label}</a>
+      <div className="order-3 md:order-none col-span-2 md:col-span-1 bar" title={`解いた割合 ${s.coverage}%`}><i style={{ width: s.coverage + '%' }} /></div>
+      <span className="order-2 md:order-none text-ink-soft text-right">解いた {s.answered}/{s.total}問 ・ 正答率 {s.rate}%</span>
+      {weak && <span className="order-4 md:order-none col-span-2 md:col-span-1 text-right -mt-0.5 md:mt-0">{weak}</span>}
     </div>
   );
 }
@@ -79,12 +81,12 @@ export default function ProgressDashboard() {
       </div>
 
       <div className="card p-5">
-        <h2 className="text-lg mb-2">年度別</h2>
-        {ys.map((y) => <Row key={y.id} label={y.label} s={summarize(ids((x) => x.year === y.id), prog)} href={`/practice/?${q}year=${y.id}`} />)}
+        <h2 className="text-lg mb-2">年度別 <small className="text-xs font-normal text-ink-faint">棒＝解いた割合</small></h2>
+        {ys.map((y) => <Row key={y.id} label={y.label} s={summarize(ids((x) => x.year === y.id), prog)} href={`/practice/?${q}year=${y.id}`} weakHref={`/practice/?${q}year=${y.id}&mode=weak&go=1`} />)}
       </div>
       <div className="card p-5">
-        <h2 className="text-lg mb-2">分野別</h2>
-        {S.categories.filter((c) => index.some((x) => x.categorySlug === c.slug)).map((c) => <Row key={c.slug} label={`${c.icon} ${c.name}`} s={summarize(ids((x) => x.categorySlug === c.slug), prog)} href={`/practice/?${q}cat=${c.slug}`} />)}
+        <h2 className="text-lg mb-2">分野別 <small className="text-xs font-normal text-ink-faint">棒＝解いた割合</small></h2>
+        {S.categories.filter((c) => index.some((x) => x.categorySlug === c.slug)).map((c) => <Row key={c.slug} label={`${c.icon} ${c.name}`} s={summarize(ids((x) => x.categorySlug === c.slug), prog)} href={`/practice/?${q}cat=${c.slug}`} weakHref={`/practice/?${q}cat=${c.slug}&mode=weak&go=1`} />)}
       </div>
 
       <WeakSummary index={index} exam={exam} q={q} note="合格点は年度ごとに変わります（近年は50問中 31〜38点）。" />

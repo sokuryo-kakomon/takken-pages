@@ -74,6 +74,14 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
   const answered = picked !== null;
   // 答えたら「正解！」が画面の外に出ないように（下に隠れている時だけ動かす）
   useEffect(() => { if (answered) resRef.current?.scrollIntoView({ block: 'nearest' }); }, [answered]);
+  // 答えた直後の「次の問題 →」は、キーの Enter・→ と同じく data-key="next" のボタン・リンクを押す（新しい道は作らない）
+  const [nextLabel, setNextLabel] = useState<string | null>(null);
+  useEffect(() => {
+    if (!answered) { setNextLabel(null); return; }
+    const b = document.querySelector<HTMLElement>('[data-key="next"]:not([disabled])');
+    setNextLabel(b ? (/結果/.test(b.textContent ?? '') ? '結果を見る' : '次の問題 →') : null);
+  }, [answered, q.id]);
+  const goNext = () => document.querySelector<HTMLElement>('[data-key="next"]:not([disabled])')?.click();
   // 複数正解・正解なし（全員正解）の問は q.ok に正解と扱う番号がすべて入っている
   const accepted = q.ok ?? [q.answer];
   const isOk = (v: number) => accepted.includes(v);
@@ -166,8 +174,16 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
         {answered && (
           <div ref={resRef} className={'mt-3 px-4 py-3 rounded-dojo font-bold flex flex-wrap items-center gap-3 scroll-mb-4 ' + (ok ? 'bg-moss-pale text-moss-deep' : 'bg-shu-pale text-shu')}>
             <span>{ok ? '正解！' : `不正解 … 正解は ${answerLabel}`}</span>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPicked(null)}>もう一度</button>
+            <span className="flex flex-wrap gap-2 ml-auto">
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPicked(null)}>もう一度</button>
+              {nextLabel && <button type="button" className="btn btn-primary btn-sm" onClick={goNext}>{nextLabel}</button>}
+            </span>
           </div>
+        )}
+        {answered && mode === 'page' && (
+          <p className="mt-2 text-sm text-ink-soft">
+            登録不要・結果はこの端末に記録されます。続けるなら → <a href="/practice/?mode=random&go=1">ランダム10問</a> ／ <a href="/practice/">演習を始める</a>
+          </p>
         )}
       </div>
 

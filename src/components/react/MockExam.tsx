@@ -109,6 +109,8 @@ export default function MockExam() {
   const [index, setIndex] = useState<Slim[] | null>(null);
   const [cat, setCat] = useState('all');
   const [run, setRun] = useState<Run | null>(null);
+  // 途中で閉じた回（すぐには再開せず、先に「前回の続き」の札を出す）
+  const [pending, setPending] = useState<Run | null>(null);
   const [i, setI] = useState(0);
   const [qs, setQs] = useState<Record<string, Question>>({});
   const [graded, setGraded] = useState(false);
@@ -123,7 +125,8 @@ export default function MockExam() {
     // 途中で閉じた回があれば続きから（前の作りの「分野の回・全問の回」は続きが無いので捨てる）
     try {
       const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (saved?.ids && (saved.cat === 'weak' || String(saved.cat).startsWith('y:'))) setRun({ self: {}, ...saved });
+      // すぐには再開せず、先に「前回の続き」の札を出して選ばせる
+      if (saved?.ids && (saved.cat === 'weak' || String(saved.cat).startsWith('y:'))) { setPending({ self: {}, ...saved }); setCat(saved.cat); }
       else if (saved) localStorage.removeItem(KEY);
     } catch { /* 無ければ新しく */ }
   }, []);
@@ -153,7 +156,10 @@ export default function MockExam() {
   const ys = S.years.filter((y) => index.some((x) => x.year === y.id));
   // 選んでいる物（年度が未選択なら最新の年度）
   const cc = cat === 'weak' || (cat.startsWith('y:') && ys.some((y) => 'y:' + y.id === cat)) ? cat : 'y:' + ys[0].id;
+  const resume = (r: Run) => { setPending(null); setRun(r); setI(0); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0); };
+  const leftOf = (r: Run) => Math.max(0, Math.round((r.start + r.limit * 1000 - Date.now()) / 1000));
   const begin = () => {
+    setPending(null);
     setRun(buildRun(index, prog, cc)); setI(0); setGraded(false); setNow(Date.now()); window.scrollTo(0, 0);
   };
   function grade() {
@@ -301,7 +307,7 @@ export default function MockExam() {
         <div className="flex flex-wrap gap-1">
           {run.ids.map((x, k) => (
             <button key={x} type="button" onClick={() => { setI(k); toQ(); }}
-              className={'w-8 h-8 text-xs rounded-dojo border ' + (k === i ? 'border-moss font-bold ' : 'border-line ') + (answered(qs[x], run.answers[x]) ? 'bg-moss text-white border-moss' : 'bg-card')}>{k + 1}</button>
+              className={'min-w-10 h-10 px-1 text-sm rounded-dojo border ' + (k === i ? 'border-moss font-bold ' : 'border-line ') + (answered(qs[x], run.answers[x]) ? 'bg-moss text-white border-moss' : 'bg-card')}>{k + 1}</button>
           ))}
         </div>
         {q ? (
@@ -391,8 +397,19 @@ export default function MockExam() {
   const tile = 'text-left rounded-dojo border px-4 py-3 transition ';
   const on = 'bg-moss text-white border-moss';
   const off = 'bg-card border-line hover:border-ink-faint';
+  const pend = pending;
   return (
     <div className="space-y-5">
+      {pend && (() => { const left = leftOf(pend); const k = Object.keys(pend.answers).length; return (
+        <div className="card p-5 border-2 border-moss">
+          <div className="font-bold text-lg mb-1">前回の続きがあります</div>
+          <p className="text-[.95rem] mb-3">{pend.cat === 'weak' ? '間違えた問題' : ys.find((y) => 'y:' + y.id === pend.cat)?.label} ・ 解答済み {k}/{pend.ids.length}問 ・ {left > 0 ? `残り ${Math.floor(left / 3600)}:${String(Math.floor((left % 3600) / 60)).padStart(2, '0')}` : '時間切れ（開くと採点します）'}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn btn-primary text-base px-6" onClick={() => resume(pend)}>続きから解く</button>
+            <button type="button" className="btn btn-ghost" onClick={() => { if (confirm('前回の回をやめて、選び直します（記録には残りません）。')) { quit(); setPending(null); } }}>やめて選び直す</button>
+          </div>
+        </div>
+      ); })()}
       <div className="card p-5">
         <div className="font-bold mb-1">年度を選ぶ</div>
         <p className="text-sm text-ink-soft mb-3">その年度の問1〜問50を順に、本番と同じ2時間で解きます。途中では正誤を出さず、最後にまとめて採点し、その年度の合格点と並べます。無料で何回でも使えます。</p>
