@@ -3,7 +3,8 @@ import { useStore } from '@nanostores/react';
 import siteJson from '../../data/site.json';
 import type { Exam, QuestionIndex, Site } from '../../lib/types';
 import { $progress, needsReview, summarize } from '../../store/progress';
-import { $aiCode, checkPaid, type PaidState } from '../../store/ai';
+import { $aiCode, $aiLog, checkPaid, type PaidState } from '../../store/ai';
+import AiBunseki from './AiBunseki';
 
 // 弱点まとめ（有料プラン）。成績表の記録だけで出す（AI は使わない＝原価なし）。
 // ・分野ごとの正答率を低い順に並べ、弱い分野を3つまで（10問解いたら出す）
@@ -19,6 +20,7 @@ type Props = { index: QuestionIndex[]; exam: Exam; q: string; pass?: { n: number
 export default function WeakSummary({ index, exam, q, pass, showCount = true, label = 'いまの正答率の目安', note }: Props) {
   const prog = useStore($progress);
   const code = useStore($aiCode);
+  const log = useStore($aiLog);
   const [paid, setPaid] = useState<PaidState>('checking');
   useEffect(() => { checkPaid(code).then(setPaid); }, [code]);
 
@@ -48,13 +50,17 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
       <span className="text-xs px-2 py-0.5 rounded-full bg-ai-pale text-ai font-bold">有料プラン</span>
     </div>
   );
-  const foot = <p className="text-xs text-ink-faint mt-4">{KIROKU}</p>;
+  const foot = (
+    <p className="text-xs text-ink-faint mt-4">{KIROKU}
+      {log.length > 0 && <button type="button" className="underline ml-2" onClick={() => { if (confirm(`AI に聞いた記録（${log.length}件）を、この端末から消します。`)) $aiLog.set([]); }}>AI に聞いた記録（{log.length}件）を消す</button>}
+    </p>
+  );
   if (paid === 'checking') return null;
   if (paid !== 'paid') {
     return (
       <div className="card p-5">
         {head}
-        <p className="text-sm text-ink-soft">あなたの解答の記録から、正答率の低い分野・{label}（過去問の記録から）・間違えた問題だけの解き直しをまとめて出します。</p>
+        <p className="text-sm text-ink-soft">あなたの解答の記録から、正答率の低い分野・{label}（過去問の記録から）・間違えた問題だけの解き直し・AI の弱点分析（間違えた問題と AI に聞いた事から）をまとめて出します。</p>
         <div className="mt-3 relative">
           <span className="absolute -top-2 left-2 z-10 text-[11px] px-1.5 rounded bg-ink text-white">見本</span>
           <div className="p-3 rounded-dojo bg-paper text-sm text-ink-faint select-none" aria-hidden="true" style={{ filter: 'blur(3px)' }}>
@@ -111,6 +117,8 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
       <div className="mt-4 flex flex-wrap gap-2">
         {weakN > 0 ? <a className="btn btn-primary btn-sm" href={mogi}>間違えた問題だけで解き直す（{runN < weakN ? `${weakN}問のうち最大${slots.length}問` : `${weakN}問`}）</a> : <span className="text-sm text-ink-soft">間違えた問題はいまありません。</span>}
       </div>
+      <AiBunseki index={index} answered={all.answered} q={q} guide={true}
+        cats={cats.filter((r) => r.s.answered > 0).map((r) => ({ slug: r.c.slug, n: r.s.answered, rate: r.s.rate }))} />
       {foot}
     </div>
   );

@@ -4,6 +4,7 @@ import siteJson from '../../data/site.json';
 import type { Exam, QuestionIndex, Site } from '../../lib/types';
 import { showExam } from '../../lib/examui';
 import WeakSummary from './WeakSummary';
+import { $aiLog, $analysis } from '../../store/ai';
 import { $progress, $bookmarks, $days, isWeak, resetProgress, streak, summarize } from '../../store/progress';
 
 const S = siteJson as unknown as Site;
@@ -109,7 +110,7 @@ export default function ProgressDashboard() {
       )}
 
       <div className="text-right">
-        <button className="btn btn-ghost btn-sm text-shu" onClick={() => { if (confirm('学習記録をすべて消します。元に戻せません。よろしいですか？')) resetProgress(); }}>記録をすべて消す</button>
+        <button className="btn btn-ghost btn-sm text-shu" onClick={() => { if (confirm('学習記録をすべて消します。元に戻せません。よろしいですか？')) { resetProgress(); $aiLog.set([]); $analysis.set(null); } }}>記録をすべて消す</button>
       </div>
     </div>
   );

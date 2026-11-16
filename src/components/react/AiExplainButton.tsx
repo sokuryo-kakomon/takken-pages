@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useStore } from '@nanostores/react';
 import type { Question } from '../../lib/types';
-import { $aiCode, AI_ENDPOINT } from '../../store/ai';
+import { $aiCode, AI_ENDPOINT, logAsk } from '../../store/ai';
 
 // 「AI に質問」。中継サーバー（worker/）の URL が PUBLIC_AI_ENDPOINT に入っていれば、
 // その場で AI とやりとりする。入っていなければ、従来どおり質問文をコピーして外の AI に貼る形。
@@ -155,6 +155,7 @@ function Chat({ q, wide }: { q: Question; wide: boolean }) {
         setInput(t);
         return;
       }
+      logAsk(q.id, t); // 弱点分析の材料（この端末にだけ残す）
       const reader = res.body.getReader();
       const dec = new TextDecoder();
       let acc = '';
@@ -215,6 +216,7 @@ function Chat({ q, wide }: { q: Question; wide: boolean }) {
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); ask(input); } }} />
           <button className="btn btn-primary" disabled={busy || full || !input.trim()}>{busy ? '…' : '送る'}</button>
         </div>
+        <p className="text-[.7rem] text-ink-faint mt-1">名前など個人の事は書かないでください。</p>
       </form>
       {!code && (
         <a href="/ai/" className="ai-upsell block mt-3 rounded-dojo border border-line overflow-hidden no-underline text-ink text-xs hover:border-moss">
@@ -229,7 +231,7 @@ function Chat({ q, wide }: { q: Question; wide: boolean }) {
         </a>
       )}
       <p className="text-[.7rem] text-ink-faint mt-2 leading-snug">
-        AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です。{code ? '有料プラン（より詳しく答える AI）' : '無料（標準の AI）'}{remaining !== null && `・今日の残り ${remaining} 回`}。質問の内容は回答の作成にだけ使い、保存しません。
+        AI の答えは誤ることがあります。正解は不動産適正取引推進機構の発表が正です。{code ? '有料プラン（より詳しく答える AI）' : '無料（標準の AI）'}{remaining !== null && `・今日の残り ${remaining} 回`}。質問の内容はサーバーに保存しません（弱点分析のため、この端末にだけ直近50件を残します。成績表で消せます）。
       </p>
     </>
   );

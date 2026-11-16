@@ -36,3 +36,17 @@ export async function checkPaid(code: string): Promise<PaidState> {
     return 'free';
   }
 }
+
+// AI の弱点分析の材料と結果（この端末にだけ残す。サーバーには送るだけで残さない）
+const jsonCodec = { encode: JSON.stringify, decode: (s: string) => { try { return JSON.parse(s); } catch { return undefined; } } };
+export type AiLogRec = { qid: string; q: string; at: number };
+// AI に聞いた問題と質問文（直近50件・1件200字まで）
+export const $aiLog = persistentAtom<AiLogRec[]>('takken_ai_log_v1', [], jsonCodec);
+export function logAsk(qid: string, q: string) {
+  const t = q.replace(/\s+/g, ' ').trim().slice(0, 200);
+  if (t) $aiLog.set([...$aiLog.get(), { qid, q: t, at: Date.now() }].slice(-50));
+}
+// 前の分析の結果（解いた数も一緒に。新しく10問解くまで押せない）
+export const $analysis = persistentAtom<{ at: number; answered: number; res: unknown } | null>('takken_ai_bunseki_v1', null, jsonCodec);
+// 「AI に送る物」を一度見せたか
+export const $bunsekiOk = persistentAtom<boolean>('takken_ai_bunseki_ok', false, jsonCodec);
