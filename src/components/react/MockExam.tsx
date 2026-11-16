@@ -429,6 +429,8 @@ export default function MockExam() {
   const yLabel = ys.find((y) => 'y:' + y.id === cc)?.label ?? '';
   const n = cc === 'weak' ? Math.min(weakN, FULL) : index.filter((x) => 'y:' + x.year === cc).length;
   const minutes = Math.round((MIN * n) / FULL);
+  // タイルを押したら、すぐ下に出る始めるボタンが画面の外なら見える所まで動かす（隠れた欄でも動くよう setTimeout と普通の scrollIntoView）
+  const pickCat = (c: string) => { setCat(c); setTimeout(() => document.getElementById('mogi-start')?.scrollIntoView({ block: 'nearest' }), 0); };
   const tile = 'text-left rounded-dojo border px-4 py-3 transition ';
   const on = 'bg-moss text-white border-moss';
   const off = 'bg-card border-line hover:border-ink-faint';
@@ -438,7 +440,7 @@ export default function MockExam() {
       {pend && (() => { const left = leftOf(pend); const k = Object.keys(pend.answers).length; return (
         <div className="card p-5 border-2 border-moss">
           <div className="font-bold text-lg mb-1">前回の続きがあります</div>
-          <p className="text-[.95rem] mb-3">{pend.cat === 'weak' ? '間違えた問題' : ys.find((y) => 'y:' + y.id === pend.cat)?.label} ・ 解答済み {k}/{pend.ids.length}問 ・ {left > 0 ? `残り ${Math.floor(left / 3600)}:${String(Math.floor((left % 3600) / 60)).padStart(2, '0')}` : '時間切れ（開くと採点します）'}</p>
+          <p className="text-[.95rem] mb-3">{pend.cat === 'weak' ? '間違えた問題' : ys.find((y) => 'y:' + y.id === pend.cat)?.label} ・ 解答済み {k}/{pend.ids.length}問 ・ {left > 0 ? `残り ${left >= 3600 ? `${Math.floor(left / 3600)}時間` : ''}${Math.floor((left % 3600) / 60)}分` : '時間切れ（開くと採点します）'}</p>
           <p className="text-sm text-ink-faint -mt-2 mb-3">⏱ 閉じている間も時間は進みます。続きは、最後に答えた問題の次から開きます。</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn btn-primary text-base px-6" onClick={() => resume(pend)}>続きから解く</button>
@@ -451,18 +453,24 @@ export default function MockExam() {
         <p className="text-sm text-ink-soft mb-3">その年度の問1〜問50を順に、本番と同じ2時間で解きます。途中では正誤を出さず、最後にまとめて採点し、その年度の合格点と並べます。無料で何回でも使えます。</p>
         <div className="grid gap-2 grid-cols-2 lg:grid-cols-3">
           {ys.map((y) => { const k = index.filter((x) => x.year === y.id).length; return (
-            <button key={y.id} type="button" className={tile + (cc === 'y:' + y.id ? on : off)} onClick={() => setCat('y:' + y.id)}
+            <button key={y.id} type="button" className={tile + (cc === 'y:' + y.id ? on : off)} onClick={() => pickCat('y:' + y.id)}
               aria-label={`${y.label}・${k}問・${Math.round((MIN * k) / FULL)}分`} aria-pressed={cc === 'y:' + y.id}>
               <div className="font-bold">{y.label}</div>
               <div className="text-xs opacity-80">{k}問 ・ {Math.round((MIN * k) / FULL)}分</div>
             </button>
           ); })}
-          <button type="button" className={tile + 'col-span-2 lg:col-span-3 ' + (cc === 'weak' ? on : off)} onClick={() => setCat('weak')} aria-pressed={cc === 'weak'}>
+          <button type="button" className={tile + 'col-span-2 lg:col-span-3 ' + (cc === 'weak' ? on : off)} onClick={() => pickCat('weak')} aria-pressed={cc === 'weak'}>
             <div className="font-bold">❗ 間違えた問題だけ</div>
             <div className="text-xs opacity-80">間違えた問題・要復習（いま {weakN}問）を、間違えた問題を先に、古い順に最大{FULL}問</div>
           </button>
         </div>
-        <p className="text-xs text-ink-soft mt-2">{cc === 'weak' ? '選んだら、下の「間違えた問題を始める」を押します。' : cc ? `下の「${yLabel}を始める」を押すと始まります。` : '年度を選ぶと、下のボタンで始められます。'}</p>
+        {/* 選んだら、タイルのすぐ下（画面の中）にも始めるボタンを出す。続きの札がある時は、新しく始めると消えることを添える */}
+        {cc && n > 0 ? (
+          <div id="mogi-start" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 scroll-mb-20">
+            <button type="button" className="btn btn-primary text-base px-6" onClick={begin}>{cc === 'weak' ? '間違えた問題' : yLabel}を始める（{n}問・{minutes}分）</button>
+            {pend && <span className="text-xs text-shu">新しく始めると、上の「前回の続き」は消えます</span>}
+          </div>
+        ) : !pend && !cc && <p className="text-xs text-ink-soft mt-2">年度を選ぶと、すぐ下に始めるボタンが出ます。</p>}
         <div className="sticky bottom-0 -mx-5 -mb-5 mt-4 px-5 py-3 bg-card/95 backdrop-blur border-t border-line rounded-b-dojo flex flex-wrap items-center gap-3">
           <button type="button" className="btn btn-primary text-base px-6 flex-1 sm:flex-none" disabled={!cc || n === 0} onClick={begin}>
             {!cc ? '年度を選んでください' : <>{cc === 'weak' ? '間違えた問題' : yLabel}を始める（{n}問・{minutes}分）</>}

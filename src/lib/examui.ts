@@ -13,3 +13,17 @@ export function showExam(e: Exam) {
     a.href = a.dataset.examLink + (hoshi ? '?exam=hoshi' : '');
   });
 }
+
+// 答えた直後の結果の欄の「次へ」の名前。data-key="next" のボタン・リンクの字から作る。
+// 1問のページ（下のナビは <a>「問42 →」）は番号入りの「問42へ →」にそろえ、演習（<button>）は「次の問題 →」のまま
+export function nextLabelOf(b: HTMLElement): string {
+  const t = (b.textContent ?? '').trim();
+  if (/結果/.test(t)) return '結果を見る';
+  if (b.tagName === 'A') { const n = t.replace(/\s*→\s*$/, ''); if (n && n !== '次の問題') return `${n}へ →`; }
+  return '次の問題 →';
+}
+
+// 答えた直後の「解説を読む ↓」：解説の頭（id="kaisetsu"）へ。隠れたブラウザ欄でも動くよう smooth・rAF は使わない
+export function toKaisetsu() {
+  setTimeout(() => document.getElementById('kaisetsu')?.scrollIntoView({ block: 'start' }), 0);
+}

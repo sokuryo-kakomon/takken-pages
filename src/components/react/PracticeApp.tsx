@@ -77,7 +77,10 @@ export default function PracticeApp() {
     if (p.get('year') || p.get('cat')) setOpenF(true);
     if (Number(p.get('n')) > 0) setLimit(Number(p.get('n')));
     autoGo.current = p.get('go') === '1';
-    setSaved(loadSaved());
+    const sv = loadSaved();
+    // トップの「演習の続きがあります ›」（?resume=1）から来た時は、選ぶ画面を出さずに保存した回をそのまま開く
+    if (p.get('resume') === '1' && sv) { autoGo.current = false; resume(sv); history.replaceState(null, '', location.pathname + (sv.exam === 'hoshi' ? '?exam=hoshi' : '')); }
+    else setSaved(sv);
   }, []);
   // 解いている回を保存（全部答えたら消す）
   useEffect(() => {

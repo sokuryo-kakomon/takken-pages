@@ -88,7 +88,7 @@ export default function AiBunseki({ index, cats, answered, q, guide }: {
                   <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs mt-0.5">
                     {p.qids.map((id) => byId.get(id) && <a key={id} href={byId.get(id)!.url}>{label(id)}</a>)}
                     {p.cat && guide && <a href={`/guide/${p.cat}/`}>📚 ガイドを読む</a>}
-                    {p.cat && <a href={`/practice/?${q}cat=${p.cat}&mode=weak&go=1`}>この分野の要復習を解く ›</a>}
+                    {p.cat && <a href={`/practice/?${q}cat=${p.cat}&mode=miss&go=1`}>この分野の間違えた問題（要復習）を解く ›</a>}
                   </div>
                 </li>
               ))}

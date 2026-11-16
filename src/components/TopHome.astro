@@ -119,7 +119,7 @@ const yearNames = Object.fromEntries(ex.years.map((y) => [y.id, y.label]));
     const pr = JSON.parse(localStorage.getItem('takken_practice_now') || 'null');
     if (pr && Array.isArray(pr.ids) && pr.results && typeof pr.results === 'object') {
       const left = pr.ids.filter((id) => !(id in pr.results)).length;
-      if (left > 0) add('/practice/', `演習の続きがあります（残り ${left}問） ›`);
+      if (left > 0) add('/practice/?resume=1', `演習の続きがあります（残り ${left}問） ›`);
     }
   } catch (e) { /* 記録が読めなければ出さない */ }
 

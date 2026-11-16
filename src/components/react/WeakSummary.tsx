@@ -93,7 +93,7 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
                   <span className="w-5 text-ink-faint">{k + 1}.</span>
                   <span className="flex-1 min-w-0 truncate">{c.icon} {c.name}</span>
                   <span className="text-shu font-bold w-12 text-right">{s.rate}%</span>
-                  <a className="text-xs whitespace-nowrap" href={`/practice/?${q}cat=${c.slug}${s.weak ? '&mode=weak&go=1' : ''}`}>{s.weak ? `要復習 ${s.weak}問を解く` : 'この分野を解く'} ›</a>
+                  <a className="text-xs whitespace-nowrap" href={`/practice/?${q}cat=${c.slug}${s.weak ? '&mode=miss&go=1' : ''}`}>{s.weak ? `間違えた問題（要復習）${s.weak}問を解く` : 'この分野を解く'} ›</a>
                 </li>
               ))}
             </ol>

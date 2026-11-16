@@ -4,6 +4,7 @@ import type { Question, LawRefs } from '../../lib/types';
 import { $progress, $bookmarks, recordAnswer, toggleBookmark, type Rec } from '../../store/progress';
 import { linkifyLawRefs, resolveLaw, type LawCard } from '../../lib/lawref';
 import AiExplainButton from './AiExplainButton';
+import { nextLabelOf, toKaisetsu } from '../../lib/examui';
 
 interface Props {
   q: Question;
@@ -83,7 +84,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered, mo
   useEffect(() => {
     if (!answered) { setNextLabel(null); return; }
     const b = document.querySelector<HTMLElement>('[data-key="next"]:not([disabled])');
-    setNextLabel(b ? (/結果/.test(b.textContent ?? '') ? '結果を見る' : '次の問題 →') : null);
+    setNextLabel(b ? nextLabelOf(b) : null);
   }, [answered, q.id]);
   const goNext = () => document.querySelector<HTMLElement>('[data-key="next"]:not([disabled])')?.click();
   // 複数正解・正解なし（全員正解）の問は q.ok に正解と扱う番号がすべて入っている
@@ -181,6 +182,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered, mo
             <span>{ok ? '正解！' : `不正解 … 正解は ${answerLabel}`}</span>
             <span className="flex flex-wrap gap-2 ml-auto">
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPicked(null)}>もう一度</button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={toKaisetsu}>解説を読む ↓</button>
               {nextLabel && <button type="button" className="btn btn-primary btn-sm" onClick={goNext}>{nextLabel}</button>}
             </span>
           </div>
@@ -210,7 +212,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered, mo
 
       {notice && <div className="qhtml mt-4"><div className="notice">{notice}</div></div>}
 
-      <section className={'relative mt-6 pt-5 border-t-2 border-line' + (revealed ? '' : ' expl-veiled')}>
+      <section id="kaisetsu" className={'relative mt-6 pt-5 border-t-2 border-line scroll-mt-16' + (revealed ? '' : ' expl-veiled')}>
         <h2 className="text-lg mb-2">解説</h2>
         <div key={q.id} ref={explRef} className="expl-body">
           {q.hint && <div className="qhtml"><div className="keybox text-[.95rem]">💡 {q.hint}</div></div>}

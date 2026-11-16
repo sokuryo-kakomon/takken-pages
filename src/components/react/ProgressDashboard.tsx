@@ -25,14 +25,26 @@ function Row({ label, s, href, weakHref }: { label: string; s: ReturnType<typeof
 export default function ProgressDashboard() {
   const [full, setFull] = useState<QuestionIndex[] | null>(null);
   const [exam, setExam] = useState<Exam>('shi');
+  const [fail, setFail] = useState(false);
   const prog = useStore($progress);
   const bms = useStore($bookmarks);
   const days = useStore($days);
   useEffect(() => {
-    fetch('/data/index.json').then((r) => r.json()).then(setFull);
+    // 「読み込み中…」のまま止まった報告があった。索引の取得が失敗・応答なしの時に黙って待ち続けていたので、
+    // 失敗したら1回だけ取り直し（キャッシュを使わない）、それでも駄目・15秒たっても来ない時は知らせる
+    let done = false;
+    const load = (n: number): void => void fetch('/data/index.json', n ? { cache: 'reload' } : undefined)
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then((j: QuestionIndex[]) => { if (!Array.isArray(j)) throw new Error('bad'); done = true; setFull(j); setFail(false); })
+      .catch(() => { if (n < 1) load(n + 1); else setFail(true); });
+    load(0);
+    const t = setTimeout(() => { if (!done) setFail(true); }, 15000);
     if (new URLSearchParams(location.search).get('exam') === 'hoshi') setExam('hoshi');
+    return () => clearTimeout(t);
   }, []);
-  if (!full) return <div className="card p-6 text-ink-soft">読み込み中…</div>;
+  if (!full) return fail
+    ? <div className="card p-6" role="alert"><p className="text-shu font-bold mb-3">記録を読めませんでした。再読み込みしてください。</p><button type="button" className="btn btn-primary btn-sm" onClick={() => location.reload()}>再読み込み</button></div>
+    : <div className="card p-6 text-ink-soft">読み込み中…</div>;
   // 測量士と測量士補は別々に集計する
   const index = full.filter((x) => x.exam === exam);
   const hasHoshi = full.some((x) => x.exam === 'hoshi');
@@ -70,31 +82,31 @@ export default function ProgressDashboard() {
         <div className="flex flex-wrap items-end gap-6">
           <div><div className="text-xs text-ink-soft">解答済み</div><div className="serif text-4xl">{all.answered}<span className="text-lg text-ink-soft"> / {all.total}問</span></div></div>
           <div><div className="text-xs text-ink-soft">正答率</div><div className="serif text-4xl text-moss-deep">{all.answered ? <>{all.rate}<span className="text-lg">%</span></> : '—'}</div></div>
-          <div><div className="text-xs text-ink-soft">要復習</div><div className="serif text-4xl text-shu">{all.weak}<span className="text-lg">問</span></div></div>
+          <div><div className="text-xs text-ink-soft">間違えた問題（要復習）</div><div className="serif text-4xl text-shu">{all.weak}<span className="text-lg">問</span></div></div>
           <div title={st.n > 0 && !st.today ? '今日解くと続きます' : undefined}><div className="text-xs text-ink-soft">連続</div><div className="serif text-4xl text-moss-deep">{st.n}<span className="text-lg">日</span></div></div>
           <div className="ml-auto flex gap-2">
-            <a className="btn btn-primary btn-sm" href={`/practice/?${q}mode=weak&go=1`}>要復習を解く</a>
+            <a className="btn btn-primary btn-sm" href={`/practice/?${q}mode=miss&go=1`}>間違えた問題（要復習）を解く</a>
             <a className="btn btn-ghost btn-sm" href={`/practice/?${q}mode=unanswered`}>未回答を解く</a>
           </div>
         </div>
         <div className="bar mt-4"><i style={{ width: all.coverage + '%' }} /></div>
-        <p className="text-xs text-ink-faint mt-2">正答率＝各問題の最後の答えで数えます ／ 要復習＝間違えた問題は、2回続けて正解するまで残ります</p>
+        <p className="text-xs text-ink-faint mt-2">正答率＝各問題の最後の答えで数えます ／ 間違えた問題（要復習）＝間違えた問題は、2回続けて正解するまで残ります（トップの「間違えた問題」と同じ数です）</p>
       </div>
 
       <div className="card p-5">
         <h2 className="text-lg mb-2">年度別 <small className="text-xs font-normal text-ink-faint">棒＝解いた割合</small></h2>
-        {ys.map((y) => <Row key={y.id} label={y.label} s={summarize(ids((x) => x.year === y.id), prog)} href={`/practice/?${q}year=${y.id}`} weakHref={`/practice/?${q}year=${y.id}&mode=weak&go=1`} />)}
+        {ys.map((y) => <Row key={y.id} label={y.label} s={summarize(ids((x) => x.year === y.id), prog)} href={`/practice/?${q}year=${y.id}`} weakHref={`/practice/?${q}year=${y.id}&mode=miss&go=1`} />)}
       </div>
       <div className="card p-5">
         <h2 className="text-lg mb-2">分野別 <small className="text-xs font-normal text-ink-faint">棒＝解いた割合</small></h2>
-        {S.categories.filter((c) => index.some((x) => x.categorySlug === c.slug)).map((c) => <Row key={c.slug} label={`${c.icon} ${c.name}`} s={summarize(ids((x) => x.categorySlug === c.slug), prog)} href={`/practice/?${q}cat=${c.slug}`} weakHref={`/practice/?${q}cat=${c.slug}&mode=weak&go=1`} />)}
+        {S.categories.filter((c) => index.some((x) => x.categorySlug === c.slug)).map((c) => <Row key={c.slug} label={`${c.icon} ${c.name}`} s={summarize(ids((x) => x.categorySlug === c.slug), prog)} href={`/practice/?${q}cat=${c.slug}`} weakHref={`/practice/?${q}cat=${c.slug}&mode=miss&go=1`} />)}
       </div>
 
       <WeakSummary index={index} exam={exam} q={q} note="合格点は年度ごとに変わります（近年は50問中 31〜38点）。" />
 
       {weak.length > 0 && (
         <div className="card p-5">
-          <h2 className="text-lg mb-1 text-shu">要復習 {weak.length}問</h2>
+          <h2 className="text-lg mb-1 text-shu">間違えた問題（要復習） {weak.length}問</h2>
           <p className="text-xs text-ink-faint mb-2">間違えたことがあり、まだ 2 回連続で正解できていない問題です。</p>
           <ul className="divide-y divide-line">{weak.map(link)}</ul>
         </div>
