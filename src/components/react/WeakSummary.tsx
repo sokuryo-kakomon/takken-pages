@@ -9,7 +9,7 @@ import AiBunseki from './AiBunseki';
 // 弱点まとめ（有料プラン）。成績表の記録だけで出す（AI は使わない＝原価なし）。
 // ・分野ごとの正答率を低い順に並べ、弱い分野を3つまで（10問解いたら出す）
 // ・本番と同じ分野の割合で見た「いまの正答率の目安」（本番の問題数ぶん解いたら出す）
-// ・間違えた問題だけの解き直しへ
+// ・間違えた問題だけの解き直しへ（解き直しそのものは無料）
 // サイトごとの違いは props で: pass（基準の問題数）・showCount（○問中 約○問 を出すか）・label・note
 const S = siteJson as unknown as Site;
 const MIN = 3; // 分野の正答率を出すのに要る解答数（少ないと当てにならない）
@@ -60,11 +60,10 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
     return (
       <div className="card p-5">
         {head}
-        <p className="text-sm text-ink-soft">有料プランに入ると、あなたの解答の記録から、ここに次の4つが出ます。</p>
-        <ul className="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+        <p className="text-sm text-ink-soft">有料プランに入ると、あなたの解答の記録から、ここに次の3つが出ます。間違えた問題の解き直しは、演習と模擬試験で無料で何回でもできます。</p>
+        <ul className="mt-3 grid sm:grid-cols-3 gap-2 text-sm">
           <li className="rounded-dojo bg-paper px-3 py-2">📉 正答率の低い分野（3つまで）</li>
           <li className="rounded-dojo bg-paper px-3 py-2">🎯 {label}</li>
-          <li className="rounded-dojo bg-paper px-3 py-2">❗ 間違えた問題だけで解き直す</li>
           <li className="rounded-dojo bg-paper px-3 py-2">🤖 AI の弱点分析（つまずきを3つまで）</li>
         </ul>
         <a href="/ai/" className="inline-block mt-3 text-sm font-bold">有料プラン（月額980円）を見る →</a>
@@ -94,7 +93,7 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
                   <span className="w-5 text-ink-faint">{k + 1}.</span>
                   <span className="flex-1 min-w-0 truncate">{c.icon} {c.name}</span>
                   <span className="text-shu font-bold w-12 text-right">{s.rate}%</span>
-                  <a className="text-xs whitespace-nowrap" href={`/practice/?${q}cat=${c.slug}${s.weak ? '&mode=weak' : ''}`}>{s.weak ? `要復習 ${s.weak}問を解く` : 'この分野を解く'} ›</a>
+                  <a className="text-xs whitespace-nowrap" href={`/practice/?${q}cat=${c.slug}${s.weak ? '&mode=weak&go=1' : ''}`}>{s.weak ? `要復習 ${s.weak}問を解く` : 'この分野を解く'} ›</a>
                 </li>
               ))}
             </ol>

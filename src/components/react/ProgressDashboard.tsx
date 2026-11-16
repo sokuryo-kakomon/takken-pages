@@ -71,7 +71,7 @@ export default function ProgressDashboard() {
           <div><div className="text-xs text-ink-soft">要復習</div><div className="serif text-4xl text-shu">{all.weak}<span className="text-lg">問</span></div></div>
           <div title={st.n > 0 && !st.today ? '今日解くと続きます' : undefined}><div className="text-xs text-ink-soft">連続</div><div className="serif text-4xl text-moss-deep">{st.n}<span className="text-lg">日</span></div></div>
           <div className="ml-auto flex gap-2">
-            <a className="btn btn-primary btn-sm" href={`/practice/?${q}mode=weak`}>要復習を解く</a>
+            <a className="btn btn-primary btn-sm" href={`/practice/?${q}mode=weak&go=1`}>要復習を解く</a>
             <a className="btn btn-ghost btn-sm" href={`/practice/?${q}mode=unanswered`}>未回答を解く</a>
           </div>
         </div>

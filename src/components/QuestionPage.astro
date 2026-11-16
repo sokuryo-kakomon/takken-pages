@@ -33,20 +33,22 @@ const jsonLd = {
   <h1 class="text-xl md:text-2xl mb-4 leading-snug">{q.title}<span class="block text-sm font-sans font-normal text-ink-soft mt-1">問題と正解</span></h1>
 
   <QuestionCard client:load q={q} lawRefs={site.lawRefs} />
+
+  {/* 次の問題は解説のすぐ下に（本・広告・出典より上。検索から1問だけ見に来た人が続けて解けるように） */}
+  <nav class="flex justify-between gap-3 mt-4">
+    {prev ? <a class="btn btn-ghost flex-1" data-key="prev" href={prev.url}>← 問{prev.num}</a> : <span class="btn btn-ghost flex-1 is-disabled">← 前の問題</span>}
+    <a class="btn btn-ghost" href={yearUrl}>一覧</a>
+    {next ? <a class="btn btn-primary flex-1" data-key="next" href={next.url}>問{next.num} →</a> : <span class="btn btn-ghost flex-1 is-disabled">次の問題 →</span>}
+  </nav>
   <BookNote q={q} />
   <KokonoCard id={q.id} />
   <p class="text-xs text-ink-faint mt-3 leading-relaxed">
     出典：一般財団法人 不動産適正取引推進機構 公表の{q.yearLabel}宅地建物取引士資格試験の試験問題（{q.source ? <a href={q.source} target="_blank" rel="noopener">PDF</a> : 'PDF'}）。問題文は原文のまま掲載しています。正解番号も同機構の公表によります。
   </p>
-
-  <nav class="flex justify-between gap-3 mt-6">
-    {prev ? <a class="btn btn-ghost flex-1" data-key="prev" href={prev.url}>← 問{prev.num}</a> : <span class="btn btn-ghost flex-1 is-disabled">← 前の問題</span>}
-    <a class="btn btn-ghost" href={yearUrl}>一覧</a>
-    {next ? <a class="btn btn-ghost flex-1" data-key="next" href={next.url}>問{next.num} →</a> : <span class="btn btn-ghost flex-1 is-disabled">次の問題 →</span>}
-  </nav>
   <div class="mt-4 text-center text-sm">
     <a href={`/guide/${q.categorySlug}/`}>📚 「{q.category}」の分野別ガイドを読む</a>
     <span class="mx-2 text-ink-faint">｜</span>
     <a href={`/practice/?cat=${q.categorySlug}`}>「{q.category}」を通しで解く</a>
   </div>
+  <p class="mt-3 text-center text-xs text-ink-faint"><a href="https://docs.google.com/forms/d/e/1FAIpQLSfdqIbn5wT5po2s_Y9tS4R094sDyBTlYrs5RcCFRHUwscmVEQ/viewform" target="_blank" rel="noopener">この解説の誤りを知らせる</a>（「{q.yearLabel} 問{q.num}」と書き添えてください。確かめて直します）</p>
 </App>

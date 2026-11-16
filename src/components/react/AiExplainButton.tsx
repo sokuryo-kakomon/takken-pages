@@ -224,7 +224,7 @@ function Chat({ q, wide }: { q: Question; wide: boolean }) {
             <thead><tr><th className="py-1.5 px-2.5"></th><th className="py-1.5 px-2.5 text-left font-normal text-ink-soft">いまの無料</th><th className="py-1.5 px-2.5 text-left border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep">有料プラン　月額980円（税込）</th></tr></thead>
             <tbody>
               <tr><td className="py-1.5 px-2.5 border-t border-line text-ink-soft whitespace-nowrap w-px">AI に質問</td><td className="py-1.5 px-2.5 border-t border-line text-ink-soft">標準の AI・1日2回</td><td className="py-1.5 px-2.5 border-t border-line border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep font-bold">より詳しく答える AI・1日15回</td></tr>
-              <tr><td className="py-1.5 px-2.5 border-t border-line text-ink-soft whitespace-nowrap w-px">間違えた問題</td><td className="py-1.5 px-2.5 border-t border-line text-ink-soft">—</td><td className="py-1.5 px-2.5 border-t border-line border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep font-bold">弱点まとめ・間違えた問題だけで解き直し</td></tr>
+              <tr><td className="py-1.5 px-2.5 border-t border-line text-ink-soft whitespace-nowrap w-px">弱点</td><td className="py-1.5 px-2.5 border-t border-line text-ink-soft">—</td><td className="py-1.5 px-2.5 border-t border-line border-l-2 border-l-moss bg-[#fffdf7] text-moss-deep font-bold">弱点まとめ・AI の弱点分析</td></tr>
             </tbody>
           </table>
           <div className="flex items-center justify-between gap-2 px-2.5 py-2 border-t border-line bg-[#fffdf7]"><span className="text-ink-soft">いつでも解約できます</span><span className="rounded-full bg-moss-deep text-white font-bold px-3.5 py-1 whitespace-nowrap">有料プランを見る →</span></div>
