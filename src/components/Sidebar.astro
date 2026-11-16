@@ -37,7 +37,7 @@ const pane = (exam: Exam) => {
 
     {/* 年度別・分野別は見出しを押すと開く。いま見ている年度・分野のある方だけ開いておく */}
     <details class="sb-group" open={ys.some((y) => active(`${ex.base}/${y.id}/`))}>
-      <summary class="sb-sum"><span>📅 年度で解く</span><span class="sb-count">{ys.length}年分<span class="sb-chev">▾</span></span></summary>
+      <summary class="sb-sum"><span>📅 年度で解く</span><span class="sb-count">{ys.length}年分<span class="sb-tog"><span class="sb-tog-t"></span><span class="sb-chev">▼</span></span></span></summary>
       <div class="space-y-0.5 mt-0.5">
         {ys.map((y) => (
           <a href={`${ex.base}/${y.id}/`} class={'sb-link' + (active(`${ex.base}/${y.id}/`) ? ' is-active' : '')}>
@@ -48,7 +48,7 @@ const pane = (exam: Exam) => {
     </details>
 
     <details class="sb-group mt-1" open={cats.some((c) => active(`/guide/${c.slug}/`))}>
-      <summary class="sb-sum"><span>🗂️ 分野で解く</span><span class="sb-count">{cats.length}分野<span class="sb-chev">▾</span></span></summary>
+      <summary class="sb-sum"><span>🗂️ 分野で解く</span><span class="sb-count">{cats.length}分野<span class="sb-tog"><span class="sb-tog-t"></span><span class="sb-chev">▼</span></span></span></summary>
       <div class="space-y-0.5 mt-0.5">
         {cats.map((c) => (
           <a href={catHref(c.slug)} class={'sb-link' + (active(`/guide/${c.slug}/`) ? ' is-active' : '')}>
