@@ -10,6 +10,8 @@ interface Props {
   lawRefs: LawRefs;
   mode?: 'page' | 'practice';
   onAnswered?: (ok: boolean, rec: Rec) => void;
+  // 1問のページで答えた直後に出す「この年度を通しで解く」「〈分野〉だけ解く」の問題数
+  more?: { yearN: number; catN: number };
 }
 
 function styleObj(s: string) {
@@ -20,7 +22,7 @@ function styleObj(s: string) {
 
 // 1 問ぶんのカード。問題文 → 図表 → 判断材料 → 解答肢 → 判定 → 解説 の順。
 // 解説は解答前でも DOM には入れておき（検索エンジンに読ませるため）、ぼかしで覆うだけにする。
-export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: Props) {
+export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered, more }: Props) {
   const [picked, setPicked] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -184,9 +186,15 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
           </div>
         )}
         {answered && mode === 'page' && (
-          <p className="mt-2 text-sm text-ink-soft">
-            登録不要・結果はこの端末に記録されます。続けるなら → <a href="/practice/?mode=random&go=1">ランダム10問</a> ／ <a href="/practice/">演習を始める</a>
-          </p>
+          <div className="mt-3">
+            {more && (
+              <div className="flex flex-wrap gap-2">
+                <a className="btn btn-ghost btn-sm" href={`/practice/?year=${q.year}&go=1`}>この年度を通しで解く（{q.yearLabel} {more.yearN}問）</a>
+                <a className="btn btn-ghost btn-sm" href={`/practice/?cat=${q.categorySlug}&go=1`}>{q.category}だけ解く（{more.catN}問）</a>
+              </div>
+            )}
+            <p className="mt-2 text-xs text-ink-soft">登録不要・結果はこの端末に記録されます</p>
+          </div>
         )}
       </div>
 

@@ -264,7 +264,7 @@ export default function AiExplainButton({ q }: { q: Question }) {
       <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(true)}>
         🤖 AI に質問{!ENDPOINT && <span className="text-xs text-ink-faint ml-1">（準備中）</span>}
       </button>
-      {ENDPOINT && !code && <span className="ml-2 text-xs text-ink-faint">無料は1日2回</span>}
+      {ENDPOINT && !code && <>{' '}<span className="ml-3 text-xs text-ink-faint">（無料は1日2回）</span></>}
       {open && (
         <div className="modal-bg" style={wide ? { padding: 0 } : undefined} onClick={() => setOpen(false)}>
           <div className="modal" style={wideStyle} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">

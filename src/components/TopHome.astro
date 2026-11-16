@@ -12,6 +12,8 @@ const ys = ex.years.filter((y) => ex.questions.some((q) => q.year === y.id));
 const cats = categoriesOf(exam).filter((c) => c.count > 0);
 const exq = exam === 'shi' ? '' : 'exam=hoshi&';
 const tile = 'border border-line rounded-dojo text-ink no-underline hover:border-moss hover:text-moss';
+// 模擬試験の続きの1行で年度の名前を出す
+const yearNames = Object.fromEntries(ex.years.map((y) => [y.id, y.label]));
 ---
 <section class="relative overflow-hidden">
   <div class="absolute -right-10 -top-16 text-[22rem] leading-none serif text-paper-deep select-none pointer-events-none" aria-hidden="true">{bg}</div>
@@ -25,6 +27,7 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
         <a href="#" id="resume" class="text-ink-soft no-underline hover:text-moss" hidden>続きから ›</a>
         <a href={`/practice/?${exq}mode=miss&go=1`} id="miss" class="text-shu font-bold no-underline hover:underline" hidden>間違えた問題を解く ›</a>
       </div>
+      <div id="conts" class="mt-3 space-y-1 text-sm" hidden></div>
       <p class="text-sm text-ink-soft mt-4" id="countdown" title="例年の日程（10月第3日曜）からの推定"></p>
       <a href="#about" class="lg:hidden inline-block mt-3 text-xs text-ink-soft no-underline">つかい方・解説について ↓</a>
     </div>
@@ -61,7 +64,7 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
   <div class="border-t border-line pt-10 space-y-10"><slot /></div>
 </section>
 
-<script define:vars={{ exam, name: ex.full }}>
+<script define:vars={{ exam, name: ex.full, yearNames }}>
   // 試験（例年10月第3日曜）までの日数
   const third = (y) => { const d = new Date(y, 9, 1); return new Date(y, 9, 1 + ((7 - d.getDay()) % 7) + 14); };
   const now = new Date(); now.setHours(0, 0, 0, 0);
@@ -100,6 +103,23 @@ const tile = 'border border-line rounded-dojo text-ink no-underline hover:border
       a.href = n < 50 ? `${base}/${m[1]}/q${n + 1}/` : `${base}/${m[1]}/`;
       a.textContent = n < 50 ? `続きから ${yr} 問${n + 1} ›` : `続きから ${yr} ›`;
       a.hidden = false;
+    }
+  } catch (e) { /* 記録が読めなければ出さない */ }
+
+  // 途中の回の続き：模擬試験（/mogi/ の takken_mogi_now）と演習（/practice/ の takken_practice_now）
+  try {
+    const box = document.getElementById('conts');
+    const add = (href, text) => { const a = document.createElement('a'); a.href = href; a.className = 'block font-bold text-moss no-underline hover:underline'; a.textContent = text; box.appendChild(a); box.hidden = false; };
+    const mg = JSON.parse(localStorage.getItem('takken_mogi_now') || 'null');
+    if (mg && Array.isArray(mg.ids) && (mg.cat === 'weak' || String(mg.cat).startsWith('y:'))) {
+      const what = mg.cat === 'weak' ? '間違えた問題' : (yearNames[mg.cat.slice(2)] || '');
+      const k = Object.values(mg.answers || {}).filter((a) => a !== undefined && a !== null && (typeof a === 'number' || (typeof a === 'string' ? a.trim() : Object.keys(a).length))).length;
+      add('/mogi/', `模擬試験の続きがあります（宅建 ${what}・${k}/${mg.ids.length}問） ›`);
+    }
+    const pr = JSON.parse(localStorage.getItem('takken_practice_now') || 'null');
+    if (pr && Array.isArray(pr.ids) && pr.results && typeof pr.results === 'object') {
+      const left = pr.ids.filter((id) => !(id in pr.results)).length;
+      if (left > 0) add('/practice/', `演習の続きがあります（残り ${left}問） ›`);
     }
   } catch (e) { /* 記録が読めなければ出さない */ }
 

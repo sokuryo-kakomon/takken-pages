@@ -23,6 +23,19 @@ const URL_MODES: Mode[] = ['order', 'random', 'unanswered', 'miss', 'wrong', 'we
 // 年度の短い名前（R3.12 → R3 12月）
 const shortYear = (s: string) => { const [m, sub] = s.split('.'); return sub ? `${m} ${sub}月` : m; };
 
+// 途中の回（「終了」した・閉じた）。次に開いた時、4枚の札の上に「前回の続き」を出す。全部解き終えたら消す
+const NOW_KEY = 'takken_practice_now';
+interface Saved { exam: Exam; mode: Mode; ids: string[]; i: number; results: Record<string, boolean>; at: number }
+function loadSaved(): Saved | null {
+  try {
+    const s = JSON.parse(localStorage.getItem(NOW_KEY) || 'null');
+    if (!s || !Array.isArray(s.ids) || !s.ids.length || typeof s.results !== 'object') return null;
+    if (s.ids.every((id: string) => id in s.results)) { localStorage.removeItem(NOW_KEY); return null; }
+    return s;
+  } catch { return null; }
+}
+const clearSaved = () => { try { localStorage.removeItem(NOW_KEY); } catch { /* 無くてよい */ } };
+
 function shuffle<T>(a: T[]) {
   const b = a.slice();
   for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; }
@@ -51,6 +64,7 @@ export default function PracticeApp() {
   const urlMode = useRef<Mode>('order');
   const prog = useStore($progress);
   const bms = useStore($bookmarks);
+  const [saved, setSaved] = useState<Saved | null>(null);
 
   useEffect(() => {
     fetch('/data/index.json').then((r) => r.json()).then(setIndex);
@@ -63,7 +77,22 @@ export default function PracticeApp() {
     if (p.get('year') || p.get('cat')) setOpenF(true);
     if (Number(p.get('n')) > 0) setLimit(Number(p.get('n')));
     autoGo.current = p.get('go') === '1';
+    setSaved(loadSaved());
   }, []);
+  // 解いている回を保存（全部答えたら消す）
+  useEffect(() => {
+    if (!session) return;
+    if (session.every((id) => id in results)) { clearSaved(); return; }
+    try { localStorage.setItem(NOW_KEY, JSON.stringify({ exam, mode, ids: session, i, results, at: Date.now() })); } catch { /* 保存できなくても解ける */ }
+  }, [session, i, results]);
+  const resume = (sv: Saved) => {
+    if (sv.exam !== exam) { setExam(sv.exam); showExam(sv.exam); }
+    // 開く問題：保存した位置から先の最初の未回答（無ければ最初の未回答）
+    let k = sv.ids.findIndex((id, n) => n >= sv.i && !(id in sv.results));
+    if (k < 0) k = sv.ids.findIndex((id) => !(id in sv.results));
+    setMode(sv.mode); setSession(sv.ids); setI(Math.max(0, k)); setResults(sv.results); setFinished(false); setSaved(null);
+    window.scrollTo(0, 0);
+  };
 
   // 年度・分野で絞った問題（出し方の前）
   const base = useMemo(() => (index ?? []).filter((x) =>
@@ -83,7 +112,7 @@ export default function PracticeApp() {
     if (m === 'random') ids = shuffle(ids);
     ids = ids.slice(0, sizeOf(m, ids.length));
     if (!ids.length) return;
-    setMode(m); setSession(ids); setI(0); setResults({}); setFinished(false);
+    setMode(m); setSession(ids); setI(0); setResults({}); setFinished(false); setSaved(null);
     window.scrollTo(0, 0);
   };
   useEffect(() => {
@@ -94,7 +123,7 @@ export default function PracticeApp() {
     if (year !== 'all' && !index.some((x) => x.exam === exam && x.year === year)) setYear('all');
     if (cat !== 'all' && !index.some((x) => x.exam === exam && x.categorySlug === cat)) setCat('all');
   }, [index, exam, year, cat]);
-  const quit = () => { setSession(null); setCur(null); setFinished(false); };
+  const quit = () => { setSession(null); setCur(null); setFinished(false); setSaved(loadSaved()); };
 
   useEffect(() => {
     if (!session) return;
@@ -125,12 +154,12 @@ export default function PracticeApp() {
           <div className="eyebrow mb-2">結果</div>
           <div className="serif text-5xl text-moss-deep">{correct}<span className="text-2xl text-ink-soft"> / {done.length}</span></div>
           <div className="text-ink-soft mt-1">正答率 {done.length ? Math.round((correct / done.length) * 100) : 0}%{done.length < session.length && `（${session.length}問中 ${done.length}問を解答）`}</div>
+          {(mode === 'miss' || mode === 'weak') && <p className="text-ink-soft mt-1">2回続けて正解すると、間違えた問題から外れます。</p>}
           <div className="flex flex-wrap justify-center gap-2 mt-5">
             <button className="btn btn-primary" disabled={!again} onClick={() => start(mode)}>{again ? `同じ条件でもう一度（${again}問）` : 'この条件の問題はもうありません'}</button>
             <button className="btn btn-ghost" onClick={quit}>条件を選び直す</button>
             <a className="btn btn-ghost" href="/progress/">成績表を見る</a>
           </div>
-          {(mode === 'miss' || mode === 'weak') && <p className="text-xs text-ink-soft mt-3">2回続けて正解すると、間違えた問題から外れます。</p>}
         </div>
         {byCat.length > 0 && (
           <div className="card p-5">
@@ -226,6 +255,16 @@ export default function PracticeApp() {
             <button type="button" className="text-moss underline" onClick={() => { setExam(other); setYear('all'); showExam(other); }}>{EXAM_NAME[other].replace(/（.*）/, '')}に切り替える</button>
           </div>
         )}
+
+        {saved && (() => { const left = saved.ids.filter((id) => !(id in saved.results)).length; const done = saved.ids.length - left; return (
+          <div className="mb-3 rounded-dojo border-2 border-moss bg-moss-pale px-4 py-3 flex flex-wrap items-center gap-3">
+            <span className="min-w-0 flex-1">
+              <b className="block">前回の続き（残り {left}問）</b>
+              <span className="block text-xs text-ink-soft mt-0.5">{saved.exam !== exam ? EXAM_NAME[saved.exam].replace(/（.*）/, '') + '・' : ''}{MODE_LABEL[saved.mode]}・{saved.ids.length}問中 {done}問 解答済み</span>
+            </span>
+            <button type="button" className="btn btn-primary" onClick={() => resume(saved)}>続きから解く</button>
+          </div>
+        ); })()}
 
         {fromUrl && (
           <button type="button" disabled={!nUrl} onClick={() => start(fromUrl)}

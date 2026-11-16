@@ -3,7 +3,7 @@ import App from '../layouts/App.astro';
 import QuestionCard from './react/QuestionCard';
 import BookNote from './BookNote.astro';
 import KokonoCard from './KokonoCard.astro';
-import { byId, site, SITE_NAME, EXAMS } from '../lib/data';
+import { byId, site, SITE_NAME, EXAMS, ofYear, ofCategory } from '../lib/data';
 import type { Question } from '../lib/types';
 
 // 1問のページ /r07/q1/。問題文は RETIO 公表の原文のまま、出典をページごとに出す
@@ -32,7 +32,7 @@ const jsonLd = {
   <nav class="text-sm text-ink-soft mb-2">{crumbs.map(([name, u]) => <><a href={u}>{name}</a> ／ </>)}問{q.num}</nav>
   <h1 class="text-xl md:text-2xl mb-4 leading-snug">{q.title}<span class="block text-sm font-sans font-normal text-ink-soft mt-1">問題と正解</span></h1>
 
-  <QuestionCard client:load q={q} lawRefs={site.lawRefs} />
+  <QuestionCard client:load q={q} lawRefs={site.lawRefs} more={{ yearN: ofYear(q.year).length, catN: ofCategory(q.categorySlug).length }} />
 
   {/* 次の問題は解説のすぐ下に（本・広告・出典より上。検索から1問だけ見に来た人が続けて解けるように） */}
   <nav class="flex justify-between gap-3 mt-4">
