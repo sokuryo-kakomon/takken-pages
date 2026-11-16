@@ -60,13 +60,13 @@ export default function WeakSummary({ index, exam, q, pass, showCount = true, la
     return (
       <div className="card p-5">
         {head}
-        <p className="text-sm text-ink-soft">あなたの解答の記録から、正答率の低い分野・{label}（過去問の記録から）・間違えた問題だけの解き直し・AI の弱点分析（間違えた問題と AI に聞いた事から）をまとめて出します。</p>
-        <div className="mt-3 relative">
-          <span className="absolute -top-2 left-2 z-10 text-[11px] px-1.5 rounded bg-ink text-white">見本</span>
-          <div className="p-3 rounded-dojo bg-paper text-sm text-ink-faint select-none" aria-hidden="true" style={{ filter: 'blur(3px)' }}>
-            いちばん弱い分野 ○○ 正答率 42% ・ {label} 約62%
-          </div>
-        </div>
+        <p className="text-sm text-ink-soft">有料プランに入ると、あなたの解答の記録から、ここに次の4つが出ます。</p>
+        <ul className="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+          <li className="rounded-dojo bg-paper px-3 py-2">📉 正答率の低い分野（3つまで）</li>
+          <li className="rounded-dojo bg-paper px-3 py-2">🎯 {label}</li>
+          <li className="rounded-dojo bg-paper px-3 py-2">❗ 間違えた問題だけで解き直す</li>
+          <li className="rounded-dojo bg-paper px-3 py-2">🤖 AI の弱点分析（つまずきを3つまで）</li>
+        </ul>
         <a href="/ai/" className="inline-block mt-3 text-sm font-bold">有料プラン（月額980円）を見る →</a>
         {foot}
       </div>
