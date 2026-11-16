@@ -109,7 +109,7 @@ export default function QuestionCard({ q, lawRefs, mode = 'page', onAnswered }: 
             <span className="text-xs text-ink-faint">前回：{prev.correct ? '正解' : '不正解'}（{prev.attempts}回目）</span>
           )}
           <button type="button" className={'ml-auto btn btn-ghost btn-sm' + (marked ? ' text-shu border-shu' : '')} onClick={() => toggleBookmark(q.id)}>
-            {marked ? '★ 要復習に入れた' : '☆ 要復習に入れる'}
+            {marked ? '★ 印をつけた' : '☆ 印をつける'}
           </button>
         </header>
       )}

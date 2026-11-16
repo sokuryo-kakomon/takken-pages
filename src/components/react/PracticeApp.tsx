@@ -59,7 +59,7 @@ export default function PracticeApp() {
     if (p.get('year')) setYear(p.get('year')!);
     if (p.get('cat')) setCat(p.get('cat')!);
     const m = p.get('mode') as Mode | null;
-    if (m && URL_MODES.includes(m)) { setMode(m); urlMode.current = m; if (m !== 'order' && m !== 'random') setFromUrl(m); }
+    if (m && URL_MODES.includes(m)) { setMode(m); urlMode.current = m; if (m === 'wrong' || m === 'weak' || m === 'bookmark') setFromUrl(m); }
     if (p.get('year') || p.get('cat')) setOpenF(true);
     if (Number(p.get('n')) > 0) setLimit(Number(p.get('n')));
     autoGo.current = p.get('go') === '1';
@@ -89,6 +89,11 @@ export default function PracticeApp() {
   useEffect(() => {
     if (index && autoGo.current) { autoGo.current = false; start(urlMode.current); }
   }, [index]);
+  useEffect(() => {
+    if (!index) return;
+    if (year !== 'all' && !index.some((x) => x.exam === exam && x.year === year)) setYear('all');
+    if (cat !== 'all' && !index.some((x) => x.exam === exam && x.categorySlug === cat)) setCat('all');
+  }, [index, exam, year, cat]);
   const quit = () => { setSession(null); setCur(null); setFinished(false); };
 
   useEffect(() => {
@@ -113,6 +118,7 @@ export default function PracticeApp() {
       return { c, n: ids.length, ok: ids.filter((id) => results[id]).length };
     }).filter((r) => r.n > 0);
     const wrong = done.filter((id) => !results[id]).map((id) => index.find((x) => x.id === id)!);
+    const again = sizeOf(mode, pick(mode).length);
     return (
       <div className="space-y-5">
         <div className="card p-6 text-center">
@@ -120,7 +126,7 @@ export default function PracticeApp() {
           <div className="serif text-5xl text-moss-deep">{correct}<span className="text-2xl text-ink-soft"> / {done.length}</span></div>
           <div className="text-ink-soft mt-1">正答率 {done.length ? Math.round((correct / done.length) * 100) : 0}%{done.length < session.length && `（${session.length}問中 ${done.length}問を解答）`}</div>
           <div className="flex flex-wrap justify-center gap-2 mt-5">
-            <button className="btn btn-primary" onClick={() => start(mode)}>同じ条件でもう一度</button>
+            <button className="btn btn-primary" disabled={!again} onClick={() => start(mode)}>{again ? `同じ条件でもう一度（${again}問）` : 'この条件の問題はもうありません'}</button>
             <button className="btn btn-ghost" onClick={quit}>条件を選び直す</button>
             <a className="btn btn-ghost" href="/progress/">成績表を見る</a>
           </div>
@@ -167,7 +173,7 @@ export default function PracticeApp() {
           <span className="serif text-lg">{i + 1} <span className="text-ink-faint text-sm">/ {session.length}</span></span>
           <div className="bar flex-1 min-w-24"><i style={{ width: ((i + (answeredHere ? 1 : 0)) / session.length) * 100 + '%' }} /></div>
           <span className="text-ink-soft">正解 {Object.values(results).filter(Boolean).length} ・ 不正解 {Object.values(results).filter((v) => !v).length}</span>
-          <button type="button" className={'btn btn-ghost btn-sm' + (marked ? ' text-shu border-shu' : '')} onClick={() => toggleBookmark(id)}>{marked ? '★ 要復習' : '☆ 要復習'}</button>
+          <button type="button" className={'btn btn-ghost btn-sm' + (marked ? ' text-shu border-shu' : '')} onClick={() => toggleBookmark(id)}>{marked ? '★ 印をつけた' : '☆ 印をつける'}</button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => setFinished(true)}>終了</button>
         </div>
         {cur ? (
