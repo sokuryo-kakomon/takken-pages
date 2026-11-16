@@ -127,6 +127,11 @@
   .ex-hoshi, [data-exam="hoshi"] .ex-shi { display: none; }
   [data-exam="hoshi"] .ex-hoshi { display: block; }
   .sb-count { font-size: .78rem; color: var(--color-ink-faint); }
+  .sb-tiles { display: grid; gap: .3rem; }
+  .sb-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 2.5rem; padding: .3rem 0; border: 1px solid var(--color-line); background: var(--color-card); border-radius: var(--radius-dojo); color: var(--color-ink); text-decoration: none; font-family: var(--font-serif, serif); font-weight: 700; font-size: .95rem; line-height: 1.15; }
+  .sb-tile small { font-family: var(--font-sans, sans-serif); font-weight: 400; font-size: .62rem; color: var(--color-ink-soft); }
+  .sb-tile:hover { background: var(--color-paper-deep); }
+  .sb-tile.is-active { background: var(--color-moss-pale); border-color: var(--color-moss); color: var(--color-moss-deep); }
   .sb-sum { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .55rem .7rem; border-radius: var(--radius-dojo); border: 1px solid var(--color-line); background: var(--color-card); font-weight: 700; font-size: .95rem; cursor: pointer; list-style: none; user-select: none; }
   .sb-sum::-webkit-details-marker { display: none; }
   .sb-sum:hover { background: var(--color-paper-deep); }
