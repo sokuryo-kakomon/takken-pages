@@ -1,0 +1,10 @@
+---
+// 講座の広告（A8.net・伊藤塾・素材ID 120）。A8 のコードは書き換えずにそのまま出す。
+// 置くのはトップと /books/ だけ（問題ページ・模擬試験の結果画面には置かない）。
+const a8 = `<a href="https://px.a8.net/svt/ejp?a8mat=4BGJFU+XXQ9E+2GHA+6O1Z6" rel="nofollow">丸暗記に頼らず、法律を理解して合格を目指す【伊藤塾の宅建士合格講座】</a>
+<img border="0" width="1" height="1" src="https://www15.a8.net/0.gif?a8mat=4BGJFU+XXQ9E+2GHA+6O1Z6" alt="">`;
+---
+<div class="card p-4 text-sm">
+  <span class="block text-xs text-ink-soft tracking-wider mb-1">PR（広告）・講座で学ぶなら</span>
+  <Fragment set:html={a8} />
+</div>

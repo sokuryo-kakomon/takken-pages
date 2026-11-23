@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import books from '../data/books.json';
 import { pageTitle, site } from '../lib/data';
+import KouzaAd from '../components/KouzaAd.astro';
 
 // おすすめ参考書・問題集（Amazon アソシエイト）。
 const href = (asin: string) => `https://www.amazon.co.jp/dp/${asin}/?tag=${site.amazonTag}`;
@@ -28,6 +29,11 @@ const items = books.items as Record<string, { asin: string; title: string; by: s
         </section>
       ))}
     </div>
+    <section class="mt-8">
+      <h2 class="text-lg mb-1">講座の広告</h2>
+      <p class="text-sm text-ink-soft mb-3">以下は広告です（当サイトが選んだものではありません）。</p>
+      <KouzaAd />
+    </section>
     <p class="text-xs text-ink-faint mt-8 leading-relaxed">当サイトは Amazon.co.jp を宣伝しリンクすることによって紹介料を得られる、Amazon アソシエイト・プログラムの参加者です。</p>
   </main>
 </Base>

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import TopHome from '../components/TopHome.astro';
+import KouzaAd from '../components/KouzaAd.astro';
 import { SITE_NAME, categories, shiQuestions, site, yearSpan } from '../lib/data';
 
 // トップ。宅建試験の過去問（R7 から新しい順）
@@ -63,6 +64,10 @@ const jsonLd = {
         </p>
       </div>
     </div>
+  </section>
+
+  <section>
+    <KouzaAd />
   </section>
 
   </TopHome>
