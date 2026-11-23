@@ -1,0 +1,42 @@
+---
+// トップだけ：左に講座の広告（A8.net・伊藤塾・素材ID 111 の画像）、右に運営者のサービス「ここの登記簿」を並べる。
+// A8 のコードは書き換えずにそのまま出す。広告と自社の案内は札の色で分ける（広告＝茶のチップ、自社＝藍のチップ）。
+const a8 = `<a href="https://px.a8.net/svt/ejp?a8mat=4BGJFU+XXQ9E+2GHA+6M4J5" rel="nofollow">
+<img border="0" width="350" height="240" alt="" src="https://www29.a8.net/svt/bgt?aid=261112170057&wid=001&eno=01&mid=s00000011467001111000&mc=1"></a>
+<img border="0" width="1" height="1" src="https://www16.a8.net/0.gif?a8mat=4BGJFU+XXQ9E+2GHA+6M4J5" alt="">`;
+---
+<div class="tp-row">
+  <div class="card tp-card">
+    <p class="tp-lab"><span class="tp-chip tp-chip-pr">PR（広告）</span>講座で学ぶなら</p>
+    <div class="tp-ad" role="group" aria-label="広告：伊藤塾 宅建士合格講座"><Fragment set:html={a8} /></div>
+  </div>
+  <a href="https://kokonotoukibo.jp/?from=takken" target="_blank" rel="noopener" class="card tp-card tp-ko-link">
+    <p class="tp-lab"><span class="tp-chip tp-chip-ko">運営者のサービス</span></p>
+    <span class="tp-ko">
+      <img src="/kokono-icon.svg" alt="" width="60" height="60" loading="lazy" class="tp-ko-ico" />
+      <span class="tp-ko-name">ここの登記簿</span>
+      <span class="tp-ko-txt">地図で選んで、登記簿を取る。</span>
+      <span class="tp-ko-btn">地図を開く →</span>
+    </span>
+  </a>
+</div>
+<style>
+.tp-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:16px}
+.tp-card{padding:16px;display:flex;flex-direction:column;border:1px solid #e3d9c4}
+.tp-lab{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:12px;color:#6b5d4f}
+.tp-chip{display:inline-block;font-size:12px;font-weight:700;line-height:1;padding:5px 9px;border-radius:999px}
+.tp-chip-pr{background:#efe7d3;color:#6b5d4f;border:1px solid #e3d9c4}
+.tp-chip-ko{background:#e6edf3;color:#2f4f6f}
+.tp-ad{position:relative;flex:1;display:flex;align-items:center;justify-content:center}
+.tp-ad :global(a){display:block;line-height:0}
+.tp-ad :global(a img){max-width:100%;height:auto}
+.tp-ad :global(img[width="1"]){position:absolute;left:0;bottom:0}
+.tp-ko-link{text-decoration:none;color:inherit}
+.tp-ko{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;border-radius:10px;padding:20px 16px;background:#2f4f6f;color:#fff}
+.tp-ko-ico{border-radius:14px;background:#fff}
+.tp-ko-name{font-size:30px;font-weight:700;line-height:1.2}
+.tp-ko-txt{font-size:17px}
+.tp-ko-btn{background:#fff;color:#2f4f6f;font-weight:700;font-size:15px;padding:10px 24px;border-radius:999px;transition:background .15s}
+.tp-ko-link:hover .tp-ko-btn{background:#e6edf3}
+@media (max-width:520px){.tp-ko-name{font-size:26px}.tp-ko-txt{font-size:16px}}
+</style>
